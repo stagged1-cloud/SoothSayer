@@ -49,6 +49,7 @@ class AnalysisFragment : Fragment() {
     private var currentPriceData: ArrayList<PriceData> = ArrayList()
     private var currentSymbol: String = "BTCUSDT"
     private val filterStates = mutableMapOf<String, Boolean>()
+    private var priceMarkerView: PriceMarkerView? = null
     
     companion object {
         private const val KEY_CURRENT_SYMBOL = "current_symbol"
@@ -295,8 +296,14 @@ class AnalysisFragment : Fragment() {
         // Store current price data for fullscreen view and state restoration
         currentPriceData = ArrayList(priceData)
         
-        // Set marker view for tooltips
-        binding.priceChart.marker = PriceMarkerView(requireContext(), priceData)
+        // Reuse or create marker view for tooltips
+        if (priceMarkerView == null) {
+            priceMarkerView = PriceMarkerView(requireContext(), priceData)
+            binding.priceChart.marker = priceMarkerView
+        } else {
+            // Update the marker view with new data
+            priceMarkerView?.updateData(priceData)
+        }
         
         // Use index for X-axis (0, 1, 2...) instead of timestamp
         val entries = priceData.mapIndexed { index, data -> 
@@ -386,6 +393,7 @@ class AnalysisFragment : Fragment() {
     
     override fun onDestroyView() {
         super.onDestroyView()
+        priceMarkerView = null
         _binding = null
     }
 }

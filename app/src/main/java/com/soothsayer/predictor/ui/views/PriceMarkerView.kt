@@ -15,13 +15,17 @@ import java.util.Locale
 
 class PriceMarkerView(
     context: Context,
-    private val priceData: List<PriceData>
+    private var priceData: List<PriceData>
 ) : MarkerView(context, R.layout.marker_view_price) {
 
     private val tvPrice: TextView = findViewById(R.id.tv_price)
     private val tvDate: TextView = findViewById(R.id.tv_date)
     private val priceFormat = NumberFormat.getCurrencyInstance(Locale.US)
     private val dateFormat = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+
+    fun updateData(newData: List<PriceData>) {
+        priceData = newData
+    }
 
     override fun refreshContent(e: Entry?, highlight: Highlight?) {
         e?.let {
