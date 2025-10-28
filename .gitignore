@@ -128,3 +128,8 @@ ENV/
 *.zip
 *.tar.gz
 *.rar
+
+# GitHub tokens
+github access token.txt
+*.token
+*.key
