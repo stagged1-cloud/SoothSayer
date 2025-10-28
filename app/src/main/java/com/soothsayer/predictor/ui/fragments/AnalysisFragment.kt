@@ -140,6 +140,7 @@ class AnalysisFragment : Fragment() {
         )
         
         binding.cryptoAutocomplete.setAdapter(adapter)
+        binding.cryptoAutocomplete.threshold = 1  // Show suggestions after 1 character
         
         // Set default selection
         val defaultCrypto = CryptoList.getDisplayName(currentSymbol) ?: cryptoNames[0]

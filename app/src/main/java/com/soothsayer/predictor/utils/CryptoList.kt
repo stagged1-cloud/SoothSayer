@@ -45,6 +45,7 @@ object CryptoList {
         CryptoPair("APE", "ApeCoin (APE/USDT)", "APEUSDT"),
         CryptoPair("ARB", "Arbitrum (ARB/USDT)", "ARBUSDT"),
         CryptoPair("OP", "Optimism (OP/USDT)", "OPUSDT"),
+        CryptoPair("HYPE", "Hyperliquid (HYPE/USDT)", "HYPEUSDT"),
         
         CryptoPair("LDO", "Lido DAO (LDO/USDT)", "LDOUSDT"),
         CryptoPair("QNT", "Quant (QNT/USDT)", "QNTUSDT"),
