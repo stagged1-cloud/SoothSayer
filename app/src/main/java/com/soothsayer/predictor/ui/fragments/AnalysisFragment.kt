@@ -154,6 +154,7 @@ class AnalysisFragment : Fragment() {
             
             if (apiSymbol != null && apiSymbol != currentSymbol) {
                 currentSymbol = apiSymbol
+                // Auto-analyze when crypto is selected
                 viewModel.analyzePatterns(currentSymbol)
             }
         }
@@ -166,6 +167,15 @@ class AnalysisFragment : Fragment() {
         if (currentCrypto != null) {
             binding.cryptoAutocomplete.setText(currentCrypto, false)
         }
+        
+        // Reset the adapter to show all options again
+        val cryptoNames = CryptoList.getDisplayNames()
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            cryptoNames
+        )
+        binding.cryptoAutocomplete.setAdapter(adapter)
     }
     
     private fun setupFilterSwitches() {
