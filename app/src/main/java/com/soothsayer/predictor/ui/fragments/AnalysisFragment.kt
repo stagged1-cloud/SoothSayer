@@ -142,9 +142,9 @@ class AnalysisFragment : Fragment() {
         binding.cryptoAutocomplete.setAdapter(adapter)
         binding.cryptoAutocomplete.threshold = 1  // Show suggestions after 1 character
         
-        // Set default selection
-        val defaultCrypto = CryptoList.getDisplayName(currentSymbol) ?: cryptoNames[0]
-        binding.cryptoAutocomplete.setText(defaultCrypto, false)
+        // Set current selection (works for both initial load and restoration)
+        val currentCrypto = CryptoList.getDisplayName(currentSymbol) ?: cryptoNames[0]
+        binding.cryptoAutocomplete.setText(currentCrypto, false)
         
         // Handle selection
         binding.cryptoAutocomplete.setOnItemClickListener { _, _, position, _ ->
@@ -155,6 +155,15 @@ class AnalysisFragment : Fragment() {
                 currentSymbol = apiSymbol
                 viewModel.analyzePatterns(currentSymbol)
             }
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Restore the selected crypto when returning from detail view
+        val currentCrypto = CryptoList.getDisplayName(currentSymbol)
+        if (currentCrypto != null) {
+            binding.cryptoAutocomplete.setText(currentCrypto, false)
         }
     }
     
