@@ -47,7 +47,7 @@
                         android:id="@+id/crypto_autocomplete"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none"
+                        android:inputType="text"
                         android:minHeight="48dp"
                         android:textSize="14sp" />
 
