@@ -154,6 +154,9 @@ class AnalysisFragment : Fragment() {
             
             if (apiSymbol != null && apiSymbol != currentSymbol) {
                 currentSymbol = apiSymbol
+                // Clear old chart data and show loading
+                binding.priceChart.clear()
+                binding.dataStatus.text = "Loading..."
                 // Auto-analyze when crypto is selected
                 viewModel.analyzePatterns(currentSymbol)
             }
@@ -391,18 +394,25 @@ class AnalysisFragment : Fragment() {
         // Observe price data for chart
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.priceData.collect { resource ->
+                android.util.Log.d("AnalysisFragment", "Price data resource: $resource")
                 when (resource) {
                     is Resource.Success -> {
                         resource.data?.let { 
-                            updateChart(it)
-                            updateDataStatus(it)
+                            if (it.isNotEmpty()) {
+                                updateChart(it)
+                                updateDataStatus(it)
+                            } else {
+                                binding.dataStatus.text = "No data available"
+                                binding.priceChart.clear()
+                            }
                         }
                     }
                     is Resource.Loading -> {
                         binding.dataStatus.text = "Loading..."
                     }
                     is Resource.Error -> {
-                        binding.dataStatus.text = "Error loading data"
+                        binding.dataStatus.text = "Error: ${resource.message}"
+                        android.util.Log.e("AnalysisFragment", "Price data error: ${resource.message}")
                     }
                 }
             }
