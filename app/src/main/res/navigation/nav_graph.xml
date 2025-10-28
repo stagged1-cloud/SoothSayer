@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/analysisFragment">
+
+    <fragment
+        android:id="@+id/analysisFragment"
+        android:name="com.soothsayer.predictor.ui.fragments.AnalysisFragment"
+        android:label="Analysis"
+        tools:layout="@layout/fragment_analysis">
+        
+        <action
+            android:id="@+id/action_analysis_to_pattern_detail"
+            app:destination="@id/patternDetailFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/patternDetailFragment"
+        android:name="com.soothsayer.predictor.ui.fragments.PatternDetailFragment"
+        android:label="Pattern Details"
+        tools:layout="@layout/fragment_pattern_detail">
+        
+        <argument
+            android:name="pattern"
+            app:argType="com.soothsayer.predictor.data.models.Pattern" />
+    </fragment>
+
+</navigation>

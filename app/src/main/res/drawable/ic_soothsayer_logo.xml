@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <!-- Crystal Ball Circle Background -->
+    <path
+        android:fillColor="#4A90E2"
+        android:pathData="M100,20 A80,80 0 1,1 100,180 A80,80 0 1,1 100,20 Z" />
+    
+    <!-- Crystal Ball Highlight -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.3"
+        android:pathData="M100,30 A70,70 0 0,1 150,80 L130,70 A50,50 0 0,0 100,40 Z" />
+    
+    <!-- Mystic Eye -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,80 Q70,90 70,100 Q70,110 100,120 Q130,110 130,100 Q130,90 100,80 Z" />
+    
+    <!-- Pupil -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M100,90 A10,12 0 1,1 100,110 A10,12 0 1,1 100,90 Z" />
+    
+    <!-- Stars around -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M40,60 L42,66 L48,66 L43,70 L45,76 L40,72 L35,76 L37,70 L32,66 L38,66 Z" />
+    
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M160,60 L162,66 L168,66 L163,70 L165,76 L160,72 L155,76 L157,70 L152,66 L158,66 Z" />
+    
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M100,140 L102,146 L108,146 L103,150 L105,156 L100,152 L95,156 L97,150 L92,146 L98,146 Z" />
+
+</vector>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SoothSayer</string>
+    <string name="app_tagline">Predict Crypto Patterns</string>
+    
+    <!-- Analysis Screen -->
+    <string name="select_crypto_asset">Select Cryptocurrency</string>
+    <string name="pattern_filters">Pattern Detection Filters</string>
+    <string name="analyze_patterns">Analyze Patterns</string>
+    <string name="price_chart">Price Chart</string>
+    <string name="detected_patterns">Detected Patterns</string>
+    
+    <!-- Pattern Filters -->
+    <string name="filter_hourly">Hourly Patterns</string>
+    <string name="filter_daily">Daily Patterns</string>
+    <string name="filter_weekly">Weekly Patterns</string>
+    <string name="filter_monthly">Monthly Patterns</string>
+    <string name="filter_yearly">Yearly Patterns</string>
+    <string name="filter_moving_averages">Moving Averages</string>
+    <string name="filter_volume">Volume Correlation</string>
+    <string name="filter_volatility">Volatility Analysis</string>
+    <string name="filter_support_resistance">Support/Resistance</string>
+    <string name="filter_seasonal">Seasonal Trends</string>
+    
+    <!-- Pattern Details -->
+    <string name="frequency">Frequency</string>
+    <string name="last_occurrence">Last Seen</string>
+    <string name="next_predicted">Predicted Next</string>
+    <string name="confidence">Confidence</string>
+    <string name="average_return">Avg Return</string>
+    
+    <!-- Messages -->
+    <string name="loading">Loading data…</string>
+    <string name="no_patterns_found">No patterns detected with current filters</string>
+    <string name="error_loading_data">Error loading data. Please try again.</string>
+    <string name="no_internet">No internet connection</string>
+    
+    <!-- Pattern Types -->
+    <string name="pattern_hourly_spike">Hourly Price Spike</string>
+    <string name="pattern_hourly_drop">Hourly Price Drop</string>
+    <string name="pattern_daily">Daily Pattern</string>
+    <string name="pattern_weekly">Weekly Pattern</string>
+    <string name="pattern_monthly">Monthly Pattern</string>
+    <string name="pattern_yearly">Yearly Pattern</string>
+    <string name="pattern_spike">Price Spike</string>
+    <string name="pattern_drop">Price Drop</string>
+    <string name="pattern_consolidation">Consolidation</string>
+    <string name="pattern_breakout">Breakout</string>
+    <string name="pattern_ma_cross">Moving Average Cross</string>
+    <string name="pattern_support">Support Level</string>
+    <string name="pattern_resistance">Resistance Level</string>
+    <string name="pattern_volume_spike">Volume Spike</string>
+    <string name="pattern_high_volatility">High Volatility</string>
+    <string name="pattern_low_volatility">Low Volatility</string>
+    <string name="pattern_consecutive_gains">Consecutive Gains</string>
+    <string name="pattern_consecutive_losses">Consecutive Losses</string>
+    <string name="pattern_seasonal">Seasonal Trend</string>
+    <string name="pattern_quarterly">Quarterly Pattern</string>
+</resources>
