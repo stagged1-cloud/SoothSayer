@@ -383,14 +383,41 @@ class AnalysisFragment : Fragment() {
             viewModel.priceData.collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        resource.data?.let { updateChart(it) }
+                        resource.data?.let { 
+                            updateChart(it)
+                            updateDataStatus(it)
+                        }
                     }
-                    else -> {
-                        // Chart remains empty or shows error
+                    is Resource.Loading -> {
+                        binding.dataStatus.text = "Loading..."
+                    }
+                    is Resource.Error -> {
+                        binding.dataStatus.text = "Error loading data"
                     }
                 }
             }
         }
+    }
+    
+    private fun updateDataStatus(priceData: List<PriceData>) {
+        if (priceData.isEmpty()) {
+            binding.dataStatus.text = "No data"
+            return
+        }
+        
+        // Get the most recent data timestamp
+        val latestTimestamp = priceData.maxOfOrNull { it.timestamp } ?: return
+        val now = System.currentTimeMillis()
+        val diffMinutes = (now - latestTimestamp) / (1000 * 60)
+        
+        val statusText = when {
+            diffMinutes < 1 -> "Just now"
+            diffMinutes < 60 -> "${diffMinutes}m ago"
+            diffMinutes < 1440 -> "${diffMinutes / 60}h ago"
+            else -> "${diffMinutes / 1440}d ago"
+        }
+        
+        binding.dataStatus.text = statusText
     }
     
     private fun showLoading() {
