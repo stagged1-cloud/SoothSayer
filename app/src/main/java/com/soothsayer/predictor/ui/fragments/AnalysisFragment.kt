@@ -27,6 +27,7 @@ import com.soothsayer.predictor.ui.dialogs.ChartFullscreenDialog
 import com.soothsayer.predictor.ui.viewmodels.AnalysisViewModel
 import com.soothsayer.predictor.ui.views.PriceMarkerView
 import com.soothsayer.predictor.utils.CryptoColorMapper
+import com.soothsayer.predictor.utils.CryptoList
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -130,19 +131,30 @@ class AnalysisFragment : Fragment() {
     }
     
     private fun setupCryptoSpinner() {
-        val cryptoSymbols = listOf(
-            "BTC/USDT", "ETH/USDT", "BNB/USDT", "ADA/USDT",
-            "XRP/USDT", "SOL/USDT", "DOT/USDT", "DOGE/USDT",
-            "AVAX/USDT", "MATIC/USDT"
-        )
+        val cryptoNames = CryptoList.getDisplayNames()
         
         val adapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_item,
-            cryptoSymbols
+            android.R.layout.simple_dropdown_item_1line,
+            cryptoNames
         )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.cryptoSpinner.adapter = adapter
+        
+        binding.cryptoAutocomplete.setAdapter(adapter)
+        
+        // Set default selection
+        val defaultCrypto = CryptoList.getDisplayName(currentSymbol) ?: cryptoNames[0]
+        binding.cryptoAutocomplete.setText(defaultCrypto, false)
+        
+        // Handle selection
+        binding.cryptoAutocomplete.setOnItemClickListener { _, _, position, _ ->
+            val selectedDisplayName = cryptoNames[position]
+            val apiSymbol = CryptoList.getApiSymbol(selectedDisplayName)
+            
+            if (apiSymbol != null && apiSymbol != currentSymbol) {
+                currentSymbol = apiSymbol
+                viewModel.analyzePatterns(currentSymbol)
+            }
+        }
     }
     
     private fun setupFilterSwitches() {
@@ -208,9 +220,12 @@ class AnalysisFragment : Fragment() {
                 return@setOnClickListener
             }
             
-            val selectedCrypto = binding.cryptoSpinner.selectedItem.toString()
-            currentSymbol = selectedCrypto.replace("/", "")
-            viewModel.analyzePatterns(currentSymbol)
+            val selectedCrypto = binding.cryptoAutocomplete.text.toString()
+            val apiSymbol = CryptoList.getApiSymbol(selectedCrypto)
+            if (apiSymbol != null) {
+                currentSymbol = apiSymbol
+                viewModel.analyzePatterns(currentSymbol)
+            }
         }
     }
     
