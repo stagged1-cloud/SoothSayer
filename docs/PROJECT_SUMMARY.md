@@ -277,7 +277,7 @@ Each pattern receives a **confidence score (0.0 - .0)** based on:
 -  Cloud sync for multi-device
 
 ### Phase  (v.0)
-- 🤖 AI-powered sentiment analysis
+-  AI-powered sentiment analysis
 -  Portfolio tracking
 -  Custom indicator builder
 -  Web dashboard

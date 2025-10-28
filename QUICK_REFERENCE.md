@@ -146,7 +146,7 @@ minimumFrequency =       // Lower = detect rare patterns
 
 ---
 
-## 🧪 TESTING
+##  TESTING
 
 ```bash
 # Unit tests

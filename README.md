@@ -119,7 +119,7 @@ cryptocompare.api.key=YOUR_CRYPTOCOMPARE_API_KEY
 - **CoinGecko API**: Price history and market data
 - **CryptoCompare API**: Alternative data source
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) first.
 

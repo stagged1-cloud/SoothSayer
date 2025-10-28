@@ -307,7 +307,7 @@ Full instructions: See `docs/GITHUB_SYNC.md`
 
 ---
 
-## 🧪 Testing Strategy
+##  Testing Strategy
 
 ### Unit Tests
 - Pattern detection algorithms
@@ -351,7 +351,7 @@ Run all tests: `./gradlew test`
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! See `docs/CONTRIBUTING.md` for guidelines.
 
