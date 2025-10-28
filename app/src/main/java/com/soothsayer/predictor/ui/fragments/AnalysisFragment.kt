@@ -249,6 +249,22 @@ class AnalysisFragment : Fragment() {
             setPinchZoom(true)
             setDrawGridBackground(false)
             
+            // Prevent parent ScrollView from intercepting touch events
+            setOnTouchListener { view, event ->
+                when (event.action) {
+                    android.view.MotionEvent.ACTION_DOWN -> {
+                        // Disable parent scrolling when touching the chart
+                        view.parent?.requestDisallowInterceptTouchEvent(true)
+                    }
+                    android.view.MotionEvent.ACTION_UP,
+                    android.view.MotionEvent.ACTION_CANCEL -> {
+                        // Re-enable parent scrolling when done
+                        view.parent?.requestDisallowInterceptTouchEvent(false)
+                    }
+                }
+                false // Let the chart handle the event
+            }
+            
             xAxis.apply {
                 position = XAxis.XAxisPosition.BOTTOM
                 setDrawGridLines(true)
