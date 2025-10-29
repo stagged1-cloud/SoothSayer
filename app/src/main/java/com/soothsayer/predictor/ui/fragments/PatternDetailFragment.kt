@@ -115,7 +115,11 @@ class PatternDetailFragment : Fragment() {
             val daysSinceLastOccurrence = TimeUnit.MILLISECONDS.toDays(
                 System.currentTimeMillis() - pattern.lastOccurrence
             )
-            timeSinceLastValue.text = "$daysSinceLastOccurrence days ago"
+            timeSinceLastValue.text = when (daysSinceLastOccurrence) {
+                0L -> "Today"
+                1L -> "1 day ago"
+                else -> "$daysSinceLastOccurrence days ago"
+            }
             
             pattern.predictedNextOccurrence?.let {
                 val daysUntilNext = TimeUnit.MILLISECONDS.toDays(
