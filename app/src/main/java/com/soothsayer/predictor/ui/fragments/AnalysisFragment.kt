@@ -15,7 +15,11 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.ScatterData
+import com.github.mikephil.charting.data.ScatterDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.soothsayer.predictor.R
@@ -47,6 +51,7 @@ class AnalysisFragment : Fragment() {
     private lateinit var patternAdapter: PatternAdapter
     
     private var currentPriceData: ArrayList<PriceData> = ArrayList()
+    private var currentPatterns: List<com.soothsayer.predictor.data.models.Pattern> = emptyList()
     private var currentSymbol: String = "BTCUSDT"
     private val filterStates = mutableMapOf<String, Boolean>()
     private var priceMarkerView: PriceMarkerView? = null
@@ -316,6 +321,78 @@ class AnalysisFragment : Fragment() {
         }
     }
     
+    /**
+     * Create scatter chart entries for pattern markers
+     * Maps pattern timestamps to chart indices and creates colored dots
+     */
+    private fun createPatternMarkerEntries(
+        priceData: List<com.soothsayer.predictor.data.models.PriceData>,
+        patterns: List<com.soothsayer.predictor.data.models.Pattern>
+    ): List<Pair<Entry, Int>> {
+        if (patterns.isEmpty() || priceData.isEmpty()) return emptyList()
+        
+        val markerEntries = mutableListOf<Pair<Entry, Int>>()
+        
+        patterns.forEach { pattern ->
+            // Find the closest price data point to this pattern's lastOccurrence
+            val closestIndex = priceData.indexOfFirst { 
+                it.timestamp >= pattern.lastOccurrence 
+            }
+            
+            if (closestIndex >= 0 && closestIndex < priceData.size) {
+                val pricePoint = priceData[closestIndex]
+                val entry = Entry(closestIndex.toFloat(), pricePoint.close.toFloat())
+                val color = getPatternMarkerColor(pattern.patternType)
+                markerEntries.add(Pair(entry, color))
+            }
+        }
+        
+        return markerEntries
+    }
+    
+    /**
+     * Get marker color based on pattern type
+     * Red: Bearish patterns (oversold, drops, resistance)
+     * Green: Bullish patterns (overbought, gains, breakouts)
+     * Yellow: Support levels
+     * Blue: Divergence patterns
+     */
+    private fun getPatternMarkerColor(patternType: com.soothsayer.predictor.data.models.PatternType): Int {
+        return when (patternType) {
+            // Bearish - Red
+            com.soothsayer.predictor.data.models.PatternType.RSI_OVERSOLD,
+            com.soothsayer.predictor.data.models.PatternType.PRICE_DROP,
+            com.soothsayer.predictor.data.models.PatternType.HOURLY_DROP,
+            com.soothsayer.predictor.data.models.PatternType.RESISTANCE_LEVEL,
+            com.soothsayer.predictor.data.models.PatternType.CONSECUTIVE_LOSSES,
+            com.soothsayer.predictor.data.models.PatternType.RSI_BEARISH_DIVERGENCE -> Color.RED
+            
+            // Bullish - Green
+            com.soothsayer.predictor.data.models.PatternType.RSI_OVERBOUGHT,
+            com.soothsayer.predictor.data.models.PatternType.MOVING_AVERAGE_CROSS,
+            com.soothsayer.predictor.data.models.PatternType.PRICE_SPIKE,
+            com.soothsayer.predictor.data.models.PatternType.HOURLY_SPIKE,
+            com.soothsayer.predictor.data.models.PatternType.BREAKOUT,
+            com.soothsayer.predictor.data.models.PatternType.CONSECUTIVE_GAINS -> Color.GREEN
+            
+            // Support - Yellow/Gold
+            com.soothsayer.predictor.data.models.PatternType.SUPPORT_LEVEL -> Color.rgb(255, 193, 7)
+            
+            // Divergence - Blue
+            com.soothsayer.predictor.data.models.PatternType.RSI_BULLISH_DIVERGENCE -> Color.BLUE
+            
+            // Volume - Orange
+            com.soothsayer.predictor.data.models.PatternType.VOLUME_SPIKE -> Color.rgb(255, 152, 0)
+            
+            // Volatility - Purple
+            com.soothsayer.predictor.data.models.PatternType.HIGH_VOLATILITY,
+            com.soothsayer.predictor.data.models.PatternType.LOW_VOLATILITY -> Color.rgb(156, 39, 176)
+            
+            // Default - White for unspecified patterns
+            else -> Color.WHITE
+        }
+    }
+    
     private fun updateChart(priceData: List<com.soothsayer.predictor.data.models.PriceData>) {
         if (priceData.isEmpty()) {
             binding.priceChart.clear()
@@ -354,7 +431,32 @@ class AnalysisFragment : Fragment() {
             fillAlpha = 50
         }
         
-        binding.priceChart.data = LineData(dataSet)
+        // Create pattern markers if patterns are available
+        val dataSets = mutableListOf<ILineDataSet>(dataSet)
+        
+        if (currentPatterns.isNotEmpty()) {
+            val markerData = createPatternMarkerEntries(priceData, currentPatterns)
+            
+            // Group markers by color for better rendering
+            val markersByColor = markerData.groupBy { it.second }
+            
+            markersByColor.forEach { (color, markers) ->
+                val markerEntries = markers.map { it.first }
+                val markerDataSet = LineDataSet(markerEntries, "Patterns").apply {
+                    setDrawCircles(true)
+                    setCircleColor(color)
+                    circleRadius = 6f
+                    circleHoleRadius = 3f
+                    circleHoleColor = Color.WHITE
+                    setDrawValues(false)
+                    lineWidth = 0f
+                    setDrawHighlightIndicators(false)
+                }
+                dataSets.add(markerDataSet)
+            }
+        }
+        
+        binding.priceChart.data = LineData(dataSets)
         
         // Update X-axis formatter to show dates correctly based on index
         binding.priceChart.xAxis.valueFormatter = object : ValueFormatter() {
@@ -380,7 +482,12 @@ class AnalysisFragment : Fragment() {
                     is Resource.Success -> {
                         hideLoading()
                         resource.data?.let { patterns ->
+                            currentPatterns = patterns
                             patternAdapter.submitList(patterns)
+                            // Update chart with pattern markers if price data is available
+                            if (currentPriceData.isNotEmpty()) {
+                                updateChart(currentPriceData)
+                            }
                         }
                     }
                     is Resource.Error -> {
