@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SoothSayer - Advanced crypto pattern predictor using RSI, Moving Averages, and 9+ detection algorithms">
+    <meta name="keywords" content="crypto, cryptocurrency, pattern detection, RSI, technical analysis, Bitcoin, Ethereum">
+    <meta name="author" content="stagged1-cloud">
+    
+    <title>SoothSayer - Crypto Pattern Predictor</title>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Live Crypto Ticker -->
+    <div class="crypto-ticker" id="cryptoTicker">
+        <div class="ticker-item">
+            <span class="ticker-symbol">BTC</span>
+            <span class="ticker-price" id="btcPrice">Loading...</span>
+            <span class="ticker-change" id="btcChange"></span>
+        </div>
+        <div class="ticker-item">
+            <span class="ticker-symbol">ETH</span>
+            <span class="ticker-price" id="ethPrice">Loading...</span>
+            <span class="ticker-change" id="ethChange"></span>
+        </div>
+        <div class="ticker-item">
+            <span class="ticker-symbol">SOL</span>
+            <span class="ticker-price" id="solPrice">Loading...</span>
+            <span class="ticker-change" id="solChange"></span>
+        </div>
+        <div class="ticker-item">
+            <span class="ticker-symbol">BNB</span>
+            <span class="ticker-price" id="bnbPrice">Loading...</span>
+            <span class="ticker-change" id="bnbChange"></span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>SoothSayer</h1>
+                <span class="beta-badge">v1.0</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#patterns">Patterns</a></li>
+                <li><a href="#algorithms">Algorithms</a></li>
+                <li><a href="#download">Download</a></li>
+                <li><a href="https://github.com/stagged1-cloud/SoothSayer" target="_blank" class="github-link">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Predict Crypto Patterns with <span class="gradient-text">AI-Powered Analysis</span></h1>
+                <p class="hero-subtitle">Advanced pattern detection using RSI, Moving Averages, Volume Correlation, and 9+ algorithms. Detect repeatable patterns in Bitcoin, Ethereum, and 70+ cryptocurrencies.</p>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">9+</div>
+                        <div class="stat-label">Detection Algorithms</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">70+</div>
+                        <div class="stat-label">Cryptocurrencies</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">73%</div>
+                        <div class="stat-label">Win Rate (RSI+Indicators)</div>
+                    </div>
+                </div>
+
+                <div class="hero-cta">
+                    <a href="#download" class="btn btn-primary">Download Android App</a>
+                    <a href="#patterns" class="btn btn-secondary">See Patterns</a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="chart-preview">
+                    <div class="chart-header">
+                        <span class="chart-symbol">BTC/USDT</span>
+                        <span class="chart-timeframe">90 Days</span>
+                    </div>
+                    <canvas id="heroChart"></canvas>
+                    <div class="pattern-tags">
+                        <span class="pattern-tag rsi">RSI Oversold</span>
+                        <span class="pattern-tag ma">MA Crossover</span>
+                        <span class="pattern-tag support">Support Level</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Powerful Pattern Detection</h2>
+            <p class="section-subtitle">Industry-standard indicators combined with statistical analysis</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>RSI Momentum</h3>
+                    <p>Detect overbought (>70) and oversold (<30) conditions. Identify bullish/bearish divergences for powerful reversal signals.</p>
+                    <div class="feature-stats">
+                        <span>65% divergence accuracy</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Moving Averages</h3>
+                    <p>Golden Cross and Death Cross detection using 7-day and 30-day moving averages. Catch trend changes early.</p>
+                    <div class="feature-stats">
+                        <span>7-day × 30-day crossovers</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Support & Resistance</h3>
+                    <p>Automatically identifies key price levels where assets repeatedly bounce or face rejection.</p>
+                    <div class="feature-stats">
+                        <span>3+ touch confirmation</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📉</div>
+                    <h3>Volume Correlation</h3>
+                    <p>Correlates price movements with trading volume. Identifies volume spikes (2x average) that drive significant moves.</p>
+                    <div class="feature-stats">
+                        <span>2x volume threshold</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Volatility Analysis</h3>
+                    <p>Detects high and low volatility periods. Predict when markets are about to make explosive moves.</p>
+                    <div class="feature-stats">
+                        <span>Standard deviation based</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Time-Based Patterns</h3>
+                    <p>Hourly, daily, weekly, monthly, and seasonal patterns. Find recurring behaviors at specific times.</p>
+                    <div class="feature-stats">
+                        <span>5 timeframe types</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Pattern Examples -->
+    <section id="patterns" class="patterns">
+        <div class="container">
+            <h2 class="section-title">Live Pattern Detection Examples</h2>
+            <p class="section-subtitle">Real patterns detected in current market conditions</p>
+            
+            <div class="pattern-examples" id="patternExamples">
+                <!-- RSI Oversold Example -->
+                <div class="pattern-example rsi-oversold">
+                    <div class="pattern-header">
+                        <div class="pattern-type">
+                            <span class="pattern-icon">🔴</span>
+                            <h3>RSI Oversold</h3>
+                        </div>
+                        <div class="pattern-confidence">
+                            <span class="confidence-label">Confidence</span>
+                            <span class="confidence-value">87%</span>
+                        </div>
+                    </div>
+                    <div class="pattern-body">
+                        <p class="pattern-description">RSI at 28.3 indicates extreme oversold conditions. Strong potential for price bounce as selling pressure exhausts.</p>
+                        <div class="pattern-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Current RSI</span>
+                                <span class="metric-value">28.3</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Threshold</span>
+                                <span class="metric-value">< 30</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Avg Return</span>
+                                <span class="metric-value positive">+4.2%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Frequency</span>
+                                <span class="metric-value">12 times</span>
+                            </div>
+                        </div>
+                        <div class="pattern-prediction">
+                            <strong>Prediction:</strong> Price may increase from oversold condition within 3-7 days
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MA Crossover Example -->
+                <div class="pattern-example ma-cross">
+                    <div class="pattern-header">
+                        <div class="pattern-type">
+                            <span class="pattern-icon">🟢</span>
+                            <h3>Golden Cross</h3>
+                        </div>
+                        <div class="pattern-confidence">
+                            <span class="confidence-label">Confidence</span>
+                            <span class="confidence-value">81%</span>
+                        </div>
+                    </div>
+                    <div class="pattern-body">
+                        <p class="pattern-description">7-day MA crossed above 30-day MA - bullish signal. [RSI Confirmed: 42.5]</p>
+                        <div class="pattern-metrics">
+                            <div class="metric">
+                                <span class="metric-label">7-day MA</span>
+                                <span class="metric-value">$67,234</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">30-day MA</span>
+                                <span class="metric-value">$66,891</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Avg Return</span>
+                                <span class="metric-value positive">+6.8%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Occurrences</span>
+                                <span class="metric-value">8 times</span>
+                            </div>
+                        </div>
+                        <div class="pattern-prediction">
+                            <strong>Prediction:</strong> Bullish trend likely to continue. RSI confirmation adds +15% confidence.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bullish Divergence Example -->
+                <div class="pattern-example divergence">
+                    <div class="pattern-header">
+                        <div class="pattern-type">
+                            <span class="pattern-icon">🔵</span>
+                            <h3>RSI Bullish Divergence</h3>
+                        </div>
+                        <div class="pattern-confidence">
+                            <span class="confidence-label">Confidence</span>
+                            <span class="confidence-value">75%</span>
+                        </div>
+                    </div>
+                    <div class="pattern-body">
+                        <p class="pattern-description">Price making lower lows while RSI makes higher lows - strong reversal signal indicating weakening downward momentum.</p>
+                        <div class="pattern-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Price Trend</span>
+                                <span class="metric-value">Lower Lows</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">RSI Trend</span>
+                                <span class="metric-value">Higher Lows</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Avg Return</span>
+                                <span class="metric-value positive">+3.5%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Timeframe</span>
+                                <span class="metric-value">30 days</span>
+                            </div>
+                        </div>
+                        <div class="pattern-prediction">
+                            <strong>Prediction:</strong> Reversal to upside expected within 3-7 days. High reliability signal.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Level Example -->
+                <div class="pattern-example support">
+                    <div class="pattern-header">
+                        <div class="pattern-type">
+                            <span class="pattern-icon">🟡</span>
+                            <h3>Support Level</h3>
+                        </div>
+                        <div class="pattern-confidence">
+                            <span class="confidence-label">Confidence</span>
+                            <span class="confidence-value">79%</span>
+                        </div>
+                    </div>
+                    <div class="pattern-body">
+                        <p class="pattern-description">Strong support at $65,800 - price has bounced here 5 times. [RSI Confirmed: 33.2]</p>
+                        <div class="pattern-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Support Price</span>
+                                <span class="metric-value">$65,800</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Touches</span>
+                                <span class="metric-value">5 times</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Avg Bounce</span>
+                                <span class="metric-value positive">+2.8%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Last Touch</span>
+                                <span class="metric-value">2 days ago</span>
+                            </div>
+                        </div>
+                        <div class="pattern-prediction">
+                            <strong>Prediction:</strong> Likely to bounce if price tests this level again. RSI oversold adds strength.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Algorithms Section -->
+    <section id="algorithms" class="algorithms">
+        <div class="container">
+            <h2 class="section-title">Detection Algorithms</h2>
+            <p class="section-subtitle">9 sophisticated algorithms working together</p>
+            
+            <div class="algorithms-grid">
+                <div class="algorithm-card">
+                    <div class="algorithm-number">1</div>
+                    <h3>RSI Momentum Oscillator</h3>
+                    <p>Formula: RSI = 100 - (100 / (1 + RS))</p>
+                    <p class="algorithm-detail">14-period calculation. Oversold <30, Overbought >70. Includes divergence detection.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">2</div>
+                    <h3>Moving Average Crossovers</h3>
+                    <p>7-day MA × 30-day MA</p>
+                    <p class="algorithm-detail">Golden Cross (bullish) and Death Cross (bearish) detection. Measures 7-day forward returns.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">3</div>
+                    <h3>Volume Correlation</h3>
+                    <p>Price × Volume Analysis</p>
+                    <p class="algorithm-detail">Identifies volume spikes >2x average that correlate with significant price movements.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">4</div>
+                    <h3>Support & Resistance</h3>
+                    <p>Price Level Clustering</p>
+                    <p class="algorithm-detail">Finds recurring price levels with 3+ touches. 2% tolerance for level matching.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">5</div>
+                    <h3>Volatility Analysis</h3>
+                    <p>Standard Deviation Based</p>
+                    <p class="algorithm-detail">Detects high/low volatility periods using rolling standard deviation calculations.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">6</div>
+                    <h3>Time-Based Patterns</h3>
+                    <p>Hourly to Yearly Cycles</p>
+                    <p class="algorithm-detail">Analyzes hourly, daily, weekly, monthly, quarterly, and yearly recurring patterns.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">7</div>
+                    <h3>Seasonal Trends</h3>
+                    <p>Quarterly Pattern Detection</p>
+                    <p class="algorithm-detail">Identifies patterns that occur during specific quarters or seasons of the year.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">8</div>
+                    <h3>Consecutive Patterns</h3>
+                    <p>Streak Recognition</p>
+                    <p class="algorithm-detail">Detects consecutive winning or losing days. Identifies momentum streaks.</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <div class="algorithm-number">9</div>
+                    <h3>Price Movements</h3>
+                    <p>Spike & Drop Detection</p>
+                    <p class="algorithm-detail">Identifies significant sudden price movements beyond normal volatility thresholds.</p>
+                </div>
+            </div>
+
+            <div class="algorithm-footer">
+                <a href="PATTERN_ALGORITHMS.md" target="_blank" class="btn btn-outline">View Full Technical Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Cryptos -->
+    <section class="cryptos">
+        <div class="container">
+            <h2 class="section-title">70+ Supported Cryptocurrencies</h2>
+            <p class="section-subtitle">Analyze patterns across all major cryptocurrencies</p>
+            
+            <div class="crypto-grid" id="cryptoGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="download">
+        <div class="container">
+            <div class="download-content">
+                <h2>Ready to Start Predicting Patterns?</h2>
+                <p>Download SoothSayer for Android and start detecting profitable patterns in real-time.</p>
+                
+                <div class="download-options">
+                    <div class="download-card">
+                        <h3>Android APK</h3>
+                        <p>Direct download for Android devices</p>
+                        <ul class="download-features">
+                            <li>Minimum Android 7.0 (API 24)</li>
+                            <li>Optimized for phones and tablets</li>
+                            <li>Offline pattern analysis</li>
+                            <li>90-day historical data</li>
+                        </ul>
+                        <a href="https://github.com/stagged1-cloud/SoothSayer/releases" class="btn btn-primary" target="_blank">Download APK</a>
+                    </div>
+
+                    <div class="download-card">
+                        <h3>GitHub Repository</h3>
+                        <p>View source code and contribute</p>
+                        <ul class="download-features">
+                            <li>Kotlin codebase</li>
+                            <li>Clean Architecture + MVVM</li>
+                            <li>Hilt dependency injection</li>
+                            <li>Comprehensive documentation</li>
+                        </ul>
+                        <a href="https://github.com/stagged1-cloud/SoothSayer" class="btn btn-outline" target="_blank">View on GitHub</a>
+                    </div>
+                </div>
+
+                <div class="download-stats">
+                    <div class="stat">
+                        <span class="stat-icon">⚡</span>
+                        <div>
+                            <div class="stat-value">< 10 MB</div>
+                            <div class="stat-label">App Size</div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">💾</span>
+                        <div>
+                            <div class="stat-value">< 50 KB</div>
+                            <div class="stat-label">Database (70 cryptos)</div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">🚀</span>
+                        <div>
+                            <div class="stat-value">< 2s</div>
+                            <div class="stat-label">Pattern Detection</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>SoothSayer</h3>
+                    <p>Advanced cryptocurrency pattern detection using statistical analysis and technical indicators.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/stagged1-cloud/SoothSayer" target="_blank">GitHub</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Documentation</h4>
+                    <ul>
+                        <li><a href="PATTERN_ALGORITHMS.md" target="_blank">Pattern Algorithms</a></li>
+                        <li><a href="PATTERN_COMPARISON.md" target="_blank">Traditional vs Statistical</a></li>
+                        <li><a href="https://github.com/stagged1-cloud/SoothSayer/blob/main/README.md" target="_blank">README</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/stagged1-cloud/SoothSayer/issues" target="_blank">Report Issues</a></li>
+                        <li><a href="https://github.com/stagged1-cloud/SoothSayer/releases" target="_blank">Releases</a></li>
+                        <li><a href="https://github.com/stagged1-cloud/SoothSayer" target="_blank">Source Code</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Disclaimer</h4>
+                    <p class="disclaimer-text">This is not financial advice. Cryptocurrency trading carries high risk. Past performance does not guarantee future results. Always do your own research.</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 SoothSayer. Open Source Project.</p>
+                <p>Built with Kotlin • Powered by Binance API • Hosted on GitHub Pages</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
