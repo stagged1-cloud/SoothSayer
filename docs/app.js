@@ -264,6 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Console easter egg
-console.log('%c🔮 SoothSayer Pattern Predictor', 'font-size: 20px; font-weight: bold; color: #6366f1;');
+console.log('%c[SoothSayer Pattern Predictor]', 'font-size: 20px; font-weight: bold; color: #6366f1;');
 console.log('%cDetecting patterns in 70+ cryptocurrencies using 9 advanced algorithms', 'font-size: 12px; color: #94a3b8;');
 console.log('%cGitHub: https://github.com/stagged1-cloud/SoothSayer', 'font-size: 12px; color: #8b5cf6;');
