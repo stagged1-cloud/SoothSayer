@@ -437,6 +437,9 @@ class AnalysisFragment : Fragment() {
         if (currentPatterns.isNotEmpty()) {
             val markerData = createPatternMarkerEntries(priceData, currentPatterns)
             
+            android.util.Log.d("AnalysisFragment", "Patterns detected: ${currentPatterns.size}")
+            android.util.Log.d("AnalysisFragment", "Marker entries created: ${markerData.size}")
+            
             // Group markers by color and create descriptive labels
             val markersByColor = markerData.groupBy { it.second }
             val colorLabels = mapOf(
@@ -452,15 +455,19 @@ class AnalysisFragment : Fragment() {
                 val markerEntries = markers.map { it.first }
                 val label = colorLabels[color] ?: "Pattern"
                 
+                android.util.Log.d("AnalysisFragment", "Creating ${label} dataset with ${markerEntries.size} markers")
+                
                 val markerDataSet = LineDataSet(markerEntries, label).apply {
+                    this.color = Color.TRANSPARENT // Make line invisible
                     setDrawCircles(true)
                     setCircleColor(color)
-                    circleRadius = 6f
-                    circleHoleRadius = 3f
+                    circleRadius = 8f
+                    circleHoleRadius = 4f
                     circleHoleColor = Color.WHITE
                     setDrawValues(false)
-                    lineWidth = 0f
+                    lineWidth = 0.1f // Small non-zero width to ensure circles render
                     setDrawHighlightIndicators(false)
+                    isHighlightEnabled = true
                 }
                 dataSets.add(markerDataSet)
             }
