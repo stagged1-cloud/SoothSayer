@@ -340,7 +340,7 @@ class AnalysisFragment : Fragment() {
             // Click to open fullscreen chart
             setOnClickListener {
                 if (currentPriceData.isNotEmpty()) {
-                    ChartFullscreenDialog.newInstance(currentPriceData, currentSymbol)
+                    ChartFullscreenDialog.newInstance(currentPriceData, currentSymbol, currentPatterns)
                         .show(childFragmentManager, "ChartFullscreenDialog")
                 }
             }
@@ -430,11 +430,11 @@ class AnalysisFragment : Fragment() {
         
         // Reuse or create marker view for tooltips
         if (priceMarkerView == null) {
-            priceMarkerView = PriceMarkerView(requireContext(), priceData)
+            priceMarkerView = PriceMarkerView(requireContext(), priceData, currentPatterns)
             binding.priceChart.marker = priceMarkerView
         } else {
             // Update the marker view with new data
-            priceMarkerView?.updateData(priceData)
+            priceMarkerView?.updateData(priceData, currentPatterns)
         }
         
         // Use index for X-axis (0, 1, 2...) instead of timestamp
@@ -463,12 +463,22 @@ class AnalysisFragment : Fragment() {
         if (currentPatterns.isNotEmpty()) {
             val markerData = createPatternMarkerEntries(priceData, currentPatterns)
             
-            // Group markers by color for better rendering
+            // Group markers by color and create descriptive labels
             val markersByColor = markerData.groupBy { it.second }
+            val colorLabels = mapOf(
+                Color.RED to "Bearish Signals",
+                Color.GREEN to "Bullish Signals",
+                Color.rgb(255, 193, 7) to "Support Levels",
+                Color.BLUE to "Divergence",
+                Color.rgb(255, 152, 0) to "Volume Spikes",
+                Color.rgb(156, 39, 176) to "Volatility"
+            )
             
             markersByColor.forEach { (color, markers) ->
                 val markerEntries = markers.map { it.first }
-                val markerDataSet = LineDataSet(markerEntries, "Patterns").apply {
+                val label = colorLabels[color] ?: "Pattern"
+                
+                val markerDataSet = LineDataSet(markerEntries, label).apply {
                     setDrawCircles(true)
                     setCircleColor(color)
                     circleRadius = 6f
@@ -483,6 +493,7 @@ class AnalysisFragment : Fragment() {
         }
         
         binding.priceChart.data = LineData(dataSets)
+        binding.priceChart.legend.isEnabled = currentPatterns.isNotEmpty()
         
         // Update X-axis formatter to show dates correctly based on index
         binding.priceChart.xAxis.valueFormatter = object : ValueFormatter() {

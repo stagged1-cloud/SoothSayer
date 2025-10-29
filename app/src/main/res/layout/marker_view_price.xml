@@ -35,6 +35,17 @@
             android:textSize="12sp"
             android:layout_marginTop="4dp" />
 
+        <TextView
+            android:id="@+id/tv_pattern"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#10B981"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"
+            android:visibility="visible" />
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
