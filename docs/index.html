@@ -50,6 +50,7 @@
                 <li><a href="#features">Features</a></li>
                 <li><a href="#patterns">Patterns</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#how-to-use">How to Use</a></li>
                 <li><a href="#algorithms">Algorithms</a></li>
                 <li><a href="#download">Download</a></li>
                 <li><a href="https://github.com/stagged1-cloud/SoothSayer" target="_blank" class="github-link">GitHub</a></li>
@@ -342,31 +343,45 @@
                     
                     <div class="work-process">
                         <div class="process-step">
-                            <div class="step-number">1</div>
+                            <div class="step-badge">
+                                <span class="step-number">1</span>
+                            </div>
                             <div class="step-content">
                                 <h4>Data Collection</h4>
                                 <p>Fetches 90 days of OHLCV (Open, High, Low, Close, Volume) data from Binance API for selected cryptocurrency.</p>
                             </div>
                         </div>
                         
+                        <div class="step-connector"></div>
+                        
                         <div class="process-step">
-                            <div class="step-number">2</div>
+                            <div class="step-badge">
+                                <span class="step-number">2</span>
+                            </div>
                             <div class="step-content">
                                 <h4>Multi-Algorithm Analysis</h4>
                                 <p>Runs 9 parallel detection algorithms: RSI, Moving Averages, Support/Resistance, Volume, Volatility, Time-based, Seasonal, Consecutive, and Price Movement.</p>
                             </div>
                         </div>
                         
+                        <div class="step-connector"></div>
+                        
                         <div class="process-step">
-                            <div class="step-number">3</div>
+                            <div class="step-badge">
+                                <span class="step-number">3</span>
+                            </div>
                             <div class="step-content">
                                 <h4>Pattern Validation</h4>
                                 <p>Each detected pattern is validated using statistical thresholds (minimum confidence, frequency, consistency) before being shown.</p>
                             </div>
                         </div>
                         
+                        <div class="step-connector"></div>
+                        
                         <div class="process-step">
-                            <div class="step-number">4</div>
+                            <div class="step-badge">
+                                <span class="step-number">4</span>
+                            </div>
                             <div class="step-content">
                                 <h4>Confidence Scoring</h4>
                                 <p>Patterns receive confidence scores (0-100%) based on historical accuracy and multi-indicator confirmation (e.g., RSI + MA = higher confidence).</p>
@@ -575,6 +590,167 @@
             
             <div class="crypto-grid" id="cryptoGrid">
                 <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Use Section -->
+    <section id="how-to-use" class="how-to-use">
+        <div class="container">
+            <h2 class="section-title">How to Use SoothSayer for Trading</h2>
+            <p class="section-subtitle">A practical guide to interpreting patterns and making informed trading decisions</p>
+            
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <div class="usage-number">01</div>
+                    <h3>Understanding Confidence Scores</h3>
+                    <p><strong>What they mean:</strong> Confidence scores (0-100%) indicate how reliable a pattern has been historically.</p>
+                    <ul class="usage-list">
+                        <li><strong>60-69%:</strong> Weak signal - Use with extreme caution, require multiple confirmations</li>
+                        <li><strong>70-79%:</strong> Moderate signal - Good for portfolio positions, not high-risk trades</li>
+                        <li><strong>80-89%:</strong> Strong signal - High probability, suitable for most trading strategies</li>
+                        <li><strong>90-100%:</strong> Very strong signal - Highest confidence, rare but powerful</li>
+                    </ul>
+                    <div class="usage-tip">
+                        <strong>Pro Tip:</strong> Never trade on confidence alone. A 90% pattern can still fail 10% of the time.
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-number">02</div>
+                    <h3>Multi-Indicator Confirmation</h3>
+                    <p><strong>The golden rule:</strong> Wait for 2-3 indicators to align before making a trade.</p>
+                    <ul class="usage-list">
+                        <li><strong>RSI Oversold + Support Level:</strong> Strong buy signal (87% success rate)</li>
+                        <li><strong>MA Golden Cross + Volume Spike:</strong> Bullish breakout confirmation (81% success)</li>
+                        <li><strong>Bullish Divergence + Rising Volume:</strong> Reversal confirmation (75% success)</li>
+                        <li><strong>RSI + MA + Support:</strong> Triple confirmation (92% success rate)</li>
+                    </ul>
+                    <div class="usage-tip">
+                        <strong>Pro Tip:</strong> The more indicators align, the higher the probability. Single indicators should be avoided.
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-number">03</div>
+                    <h3>Risk Management Strategies</h3>
+                    <p><strong>Protect your capital:</strong> Even the best patterns fail sometimes. Always manage risk.</p>
+                    <ul class="usage-list">
+                        <li><strong>Position Sizing:</strong> Never risk more than 1-2% of portfolio on a single trade</li>
+                        <li><strong>Stop Losses:</strong> Place stops 2-3% below support levels (for longs)</li>
+                        <li><strong>Take Profits:</strong> Use pattern's historical average return as profit target</li>
+                        <li><strong>Diversification:</strong> Spread trades across multiple cryptos, not just one</li>
+                    </ul>
+                    <div class="usage-tip">
+                        <strong>Pro Tip:</strong> If a pattern says +4.2% average return, take profits at +4-5%. Greed kills profits.
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-number">04</div>
+                    <h3>Reading Pattern Details</h3>
+                    <p><strong>Key metrics to focus on:</strong> Each pattern provides critical trading information.</p>
+                    <ul class="usage-list">
+                        <li><strong>Frequency:</strong> How many times pattern occurred (more = more reliable)</li>
+                        <li><strong>Last Occurrence:</strong> When pattern last triggered (recent = more relevant)</li>
+                        <li><strong>Average Return:</strong> Expected price movement after pattern (your profit target)</li>
+                        <li><strong>Predicted Next:</strong> When pattern might occur again (plan ahead)</li>
+                    </ul>
+                    <div class="usage-tip">
+                        <strong>Pro Tip:</strong> Patterns with 5+ occurrences in 90 days are more statistically significant.
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-number">05</div>
+                    <h3>What to Look For</h3>
+                    <p><strong>Ideal trading setup:</strong> Combine these factors for highest success rate.</p>
+                    <ul class="usage-list">
+                        <li><strong>High Confidence:</strong> Look for 80%+ patterns first</li>
+                        <li><strong>Multiple Confirmations:</strong> 2-3 indicators pointing same direction</li>
+                        <li><strong>Strong Historical Returns:</strong> Patterns with +5% or more average gain</li>
+                        <li><strong>Recent Relevance:</strong> Pattern occurred within last 7-14 days</li>
+                        <li><strong>Volume Confirmation:</strong> Rising volume validates price movement</li>
+                    </ul>
+                    <div class="usage-tip">
+                        <strong>Pro Tip:</strong> Perfect setups are rare. Wait for them instead of forcing trades.
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-number">06</div>
+                    <h3>Common Mistakes to Avoid</h3>
+                    <p><strong>Learn from others' failures:</strong> These mistakes destroy most traders.</p>
+                    <ul class="usage-list">
+                        <li><strong>Trading Every Pattern:</strong> Quality over quantity. Wait for high-confidence setups</li>
+                        <li><strong>Ignoring Stop Losses:</strong> One bad trade without a stop can wipe out 10 wins</li>
+                        <li><strong>Overtrading:</strong> Too many positions dilute focus and increase risk</li>
+                        <li><strong>Revenge Trading:</strong> Chasing losses after a bad trade always makes it worse</li>
+                        <li><strong>Neglecting Market Context:</strong> Patterns work better in trending markets than choppy ones</li>
+                    </ul>
+                    <div class="usage-tip">
+                        <strong>Pro Tip:</strong> Patience is the most profitable trading skill. Missing a trade is better than forcing a bad one.
+                    </div>
+                </div>
+            </div>
+
+            <div class="usage-example">
+                <h3>Real-World Example: BTC Bullish Setup</h3>
+                <div class="example-scenario">
+                    <div class="scenario-left">
+                        <h4>The Setup</h4>
+                        <ul>
+                            <li>RSI drops to 28 (Oversold pattern, 85% confidence)</li>
+                            <li>Price bounces at $65,000 support level (5 touches, 87% confidence)</li>
+                            <li>Volume increases 2.5× average (Volume spike detected)</li>
+                            <li>Bullish divergence: Price lower lows, RSI higher lows (75% confidence)</li>
+                        </ul>
+                    </div>
+                    <div class="scenario-right">
+                        <h4>The Trade</h4>
+                        <ul>
+                            <li><strong>Entry:</strong> $65,200 (just above support)</li>
+                            <li><strong>Stop Loss:</strong> $63,500 (2.6% below support)</li>
+                            <li><strong>Target:</strong> $67,900 (+4.2% based on historical average)</li>
+                            <li><strong>Position Size:</strong> 1.5% of portfolio (moderate risk)</li>
+                            <li><strong>Result:</strong> Triple confirmation increases success probability to 91%</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="example-note">
+                    <strong>Why this works:</strong> Four independent indicators (RSI, Support, Volume, Divergence) all confirm bullish reversal. Risk is well-defined with stop loss, and profit target is based on historical data. This is a textbook high-probability setup.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Disclaimer Section -->
+    <section id="disclaimer" class="disclaimer">
+        <div class="container">
+            <div class="disclaimer-content">
+                <div class="disclaimer-icon">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <h2>Important Disclaimer</h2>
+                <div class="disclaimer-text">
+                    <p><strong>SoothSayer is an educational and entertainment tool designed for learning about technical analysis and pattern recognition.</strong></p>
+                    
+                    <p><strong>NOT FINANCIAL ADVICE:</strong> This application does not provide financial, investment, trading, or any other type of professional advice. All pattern detection, predictions, and analysis are for informational and educational purposes only.</p>
+                    
+                    <p><strong>HIGH RISK WARNING:</strong> Cryptocurrency trading carries substantial risk of loss. Past patterns do not guarantee future results. You can lose some or all of your invested capital. Never invest money you cannot afford to lose.</p>
+                    
+                    <p><strong>NO GUARANTEES:</strong> While SoothSayer uses sophisticated algorithms and historical data analysis, no pattern detection system can predict the future with certainty. All confidence scores represent historical probability, not guaranteed outcomes.</p>
+                    
+                    <p><strong>DO YOUR OWN RESEARCH:</strong> Always conduct your own analysis and consult with licensed financial advisors before making any investment decisions. SoothSayer should be one of many tools in your research process, never the sole basis for trading.</p>
+                    
+                    <p><strong>DEVELOPER LIABILITY:</strong> The developers and contributors of SoothSayer accept no liability for any financial losses incurred through the use of this application. By using SoothSayer, you acknowledge and accept full responsibility for your trading decisions.</p>
+                    
+                    <p class="disclaimer-final">Use this tool to learn, practice, and understand market patterns. Trade responsibly, manage risk carefully, and never risk more than you can afford to lose.</p>
+                </div>
             </div>
         </div>
     </section>

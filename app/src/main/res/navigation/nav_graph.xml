@@ -18,6 +18,14 @@
             app:exitAnim="@android:anim/fade_out"
             app:popEnterAnim="@android:anim/fade_in"
             app:popExitAnim="@android:anim/slide_out_right" />
+        
+        <action
+            android:id="@+id/action_analysis_to_about"
+            app:destination="@id/aboutFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -30,5 +38,11 @@
             android:name="pattern"
             app:argType="com.soothsayer.predictor.data.models.Pattern" />
     </fragment>
+    
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.soothsayer.predictor.ui.fragments.AboutFragment"
+        android:label="About"
+        tools:layout="@layout/fragment_about" />
 
 </navigation>

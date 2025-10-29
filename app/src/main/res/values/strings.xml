@@ -56,4 +56,18 @@
     <string name="pattern_consecutive_losses">Consecutive Losses</string>
     <string name="pattern_seasonal">Seasonal Trend</string>
     <string name="pattern_quarterly">Quarterly Pattern</string>
+    
+    <!-- About Screen -->
+    <string name="about">About</string>
+    <string name="version_1_0_0">Version 1.0.0</string>
+    <string name="about_description_title">What is SoothSayer?</string>
+    <string name="about_description">SoothSayer is an advanced cryptocurrency pattern detection tool that uses statistical analysis and technical indicators (RSI, Moving Averages, Support/Resistance, Volume, and more) to identify repeatable patterns in crypto price movements. Analyze 90 days of historical data across 70+ cryptocurrencies to discover high-probability trading opportunities.</string>
+    <string name="disclaimer_title">Important Disclaimer</string>
+    <string name="disclaimer_text">⚠️ EDUCATIONAL USE ONLY\n\nThis app is designed for educational and entertainment purposes to help users learn about technical analysis and pattern recognition. It is NOT financial advice.\n\n• Crypto trading carries substantial risk of loss\n• Past patterns do not guarantee future results\n• No prediction system is 100% accurate\n• Never invest money you cannot afford to lose\n\nBy using this app, you acknowledge full responsibility for your trading decisions. The developers accept no liability for any financial losses incurred.</string>
+    <string name="author_title">Developer</string>
+    <string name="author_name">Created by Don T (stagged1-cloud)</string>
+    <string name="copyright_text">© 2025 SoothSayer. All rights reserved.\n\nBuilt with Kotlin, Jetpack Compose, Room, Hilt, and MPAndroidChart.</string>
+    <string name="view_on_github">View on GitHub</string>
+    <string name="visit_website">Visit Website</string>
+    <string name="license_info">Open Source • MIT License</string>
 </resources>
