@@ -31,7 +31,6 @@ object CryptoList {
         CryptoPair("ATOM", "Cosmos (ATOM/USDT)", "ATOMUSDT"),
         CryptoPair("ETC", "Ethereum Classic (ETC/USDT)", "ETCUSDT"),
         CryptoPair("XLM", "Stellar (XLM/USDT)", "XLMUSDT"),
-        CryptoPair("XMR", "Monero (XMR/USDT)", "XMRUSDT"),
         CryptoPair("BCH", "Bitcoin Cash (BCH/USDT)", "BCHUSDT"),
         CryptoPair("ALGO", "Algorand (ALGO/USDT)", "ALGOUSDT"),
         
