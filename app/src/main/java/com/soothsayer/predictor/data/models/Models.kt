@@ -83,7 +83,13 @@ enum class PatternType {
     
     // Seasonal
     SEASONAL_TREND,
-    QUARTERLY_PATTERN
+    QUARTERLY_PATTERN,
+    
+    // RSI (Momentum Oscillator)
+    RSI_OVERSOLD,
+    RSI_OVERBOUGHT,
+    RSI_BULLISH_DIVERGENCE,
+    RSI_BEARISH_DIVERGENCE
 }
 
 /**
@@ -100,6 +106,7 @@ data class PatternFilter(
     val enableVolatilityAnalysis: Boolean = false,
     val enableSupportResistance: Boolean = true,
     val enableSeasonalTrends: Boolean = false,
+    val enableRSI: Boolean = true,
     val minimumConfidence: Double = 0.6,
     val minimumFrequency: Int = 3
 )

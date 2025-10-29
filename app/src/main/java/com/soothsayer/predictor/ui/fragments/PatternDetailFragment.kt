@@ -302,6 +302,7 @@ class PatternDetailFragment : Fragment() {
             type.name.contains("SEASONAL") -> "Seasonal Trend Analysis"
             type.name.contains("CONSECUTIVE") -> "Consecutive Pattern Recognition"
             type.name.contains("SPIKE") || type.name.contains("DROP") -> "Price Movement Detection"
+            type.name.contains("RSI") -> "RSI Momentum Oscillator"
             else -> "Advanced Pattern Recognition"
         }
     }
@@ -320,6 +321,10 @@ class PatternDetailFragment : Fragment() {
             type.name.contains("SEASONAL") -> "Detects patterns that occur during specific seasons or quarters of the year."
             type.name.contains("CONSECUTIVE") -> "Recognizes streaks of consecutive winning or losing days."
             type.name.contains("SPIKE") || type.name.contains("DROP") -> "Identifies significant sudden price movements beyond normal volatility."
+            type == PatternType.RSI_OVERSOLD -> "RSI (Relative Strength Index) below 30 indicates oversold conditions. Typically signals a potential bounce as selling pressure exhausts."
+            type == PatternType.RSI_OVERBOUGHT -> "RSI (Relative Strength Index) above 70 indicates overbought conditions. Typically signals a potential pullback as buying pressure exhausts."
+            type == PatternType.RSI_BULLISH_DIVERGENCE -> "Price makes lower lows while RSI makes higher lows - a strong reversal signal. Indicates weakening downward momentum despite falling prices."
+            type == PatternType.RSI_BEARISH_DIVERGENCE -> "Price makes higher highs while RSI makes lower highs - a strong reversal signal. Indicates weakening upward momentum despite rising prices."
             else -> "Uses advanced statistical methods to detect repeatable patterns in price data."
         }
     }

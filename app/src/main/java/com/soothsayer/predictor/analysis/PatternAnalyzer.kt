@@ -75,6 +75,16 @@ class PatternAnalyzer @Inject constructor() {
         // 8. Price spike/drop patterns
         patterns.addAll(detectPriceMovementPatterns(priceData))
         
+        // 9. RSI patterns (momentum oscillator)
+        if (filters.enableRSI) {
+            patterns.addAll(detectRSIPatterns(priceData))
+        }
+        
+        // Enhance patterns with RSI confirmation
+        if (filters.enableRSI) {
+            enhancePatternsWithRSI(patterns, priceData)
+        }
+        
         // Filter by confidence and frequency
         return patterns.filter {
             it.confidence >= filters.minimumConfidence &&
@@ -662,6 +672,353 @@ class PatternAnalyzer @Inject constructor() {
                 calendar.timeInMillis
             }
             else -> now + (7 * 24 * 60 * 60 * 1000) // Default: 1 week
+        }
+    }
+    
+    /**
+     * Calculate RSI (Relative Strength Index)
+     * Formula: RSI = 100 - (100 / (1 + RS))
+     * where RS = Average Gain / Average Loss over period
+     * 
+     * @param prices Price data
+     * @param period Look-back period (default 14)
+     * @return RSI value (0-100), or 50.0 if insufficient data
+     */
+    private fun calculateRSI(prices: List<PriceData>, period: Int = 14): Double {
+        if (prices.size < period + 1) return 50.0 // Neutral if insufficient data
+        
+        // Calculate price changes
+        val changes = prices.zipWithNext { a, b -> b.close - a.close }
+        
+        // Take the last 'period' changes
+        val recentChanges = changes.takeLast(period)
+        
+        // Separate gains and losses
+        val gains = recentChanges.map { if (it > 0) it else 0.0 }
+        val losses = recentChanges.map { if (it < 0) -it else 0.0 }
+        
+        // Calculate averages
+        val avgGain = gains.average()
+        val avgLoss = losses.average()
+        
+        // Handle edge case: no losses means RSI = 100
+        if (avgLoss == 0.0) return 100.0
+        
+        // Calculate RS and RSI
+        val rs = avgGain / avgLoss
+        return 100.0 - (100.0 / (1.0 + rs))
+    }
+    
+    /**
+     * Detect RSI-based patterns
+     * - Oversold: RSI < 30 (potential buy signal)
+     * - Overbought: RSI > 70 (potential sell signal)
+     * - Bullish Divergence: Price making lower lows while RSI makes higher lows
+     * - Bearish Divergence: Price making higher highs while RSI makes lower highs
+     */
+    private fun detectRSIPatterns(data: List<PriceData>): List<Pattern> {
+        if (data.size < 20) return emptyList()
+        
+        val patterns = mutableListOf<Pattern>()
+        val rsi = calculateRSI(data)
+        val symbol = data.firstOrNull()?.symbol ?: return emptyList()
+        
+        // Oversold condition (RSI < 30)
+        if (rsi < 30.0) {
+            val confidence = calculateRSIConfidence(rsi, isOversold = true)
+            patterns.add(Pattern(
+                symbol = symbol,
+                patternType = PatternType.RSI_OVERSOLD,
+                confidence = confidence,
+                frequency = countRSIOversoldOccurrences(data),
+                lastOccurrence = data.last().timestamp,
+                predictedNextOccurrence = null,
+                description = "RSI Oversold at ${String.format("%.1f", rsi)} - Strong potential for price bounce. " +
+                        "Historically indicates reversal to the upside.",
+                averageReturnPercentage = calculateAverageReturnAfterRSIOversold(data)
+            ))
+        }
+        
+        // Overbought condition (RSI > 70)
+        if (rsi > 70.0) {
+            val confidence = calculateRSIConfidence(rsi, isOversold = false)
+            patterns.add(Pattern(
+                symbol = symbol,
+                patternType = PatternType.RSI_OVERBOUGHT,
+                confidence = confidence,
+                frequency = countRSIOverboughtOccurrences(data),
+                lastOccurrence = data.last().timestamp,
+                predictedNextOccurrence = null,
+                description = "RSI Overbought at ${String.format("%.1f", rsi)} - Potential for price pullback. " +
+                        "Historically indicates reversal to the downside.",
+                averageReturnPercentage = calculateAverageReturnAfterRSIOverbought(data)
+            ))
+        }
+        
+        // Bullish Divergence detection
+        val bullishDivergence = detectRSIBullishDivergence(data)
+        if (bullishDivergence != null) {
+            patterns.add(bullishDivergence)
+        }
+        
+        // Bearish Divergence detection
+        val bearishDivergence = detectRSIBearishDivergence(data)
+        if (bearishDivergence != null) {
+            patterns.add(bearishDivergence)
+        }
+        
+        return patterns
+    }
+    
+    /**
+     * Calculate confidence for RSI signals
+     * More extreme values = higher confidence
+     */
+    private fun calculateRSIConfidence(rsi: Double, isOversold: Boolean): Double {
+        return if (isOversold) {
+            // RSI 0-30: map to confidence 0.6-0.95
+            0.95 - (rsi / 30.0 * 0.35)
+        } else {
+            // RSI 70-100: map to confidence 0.6-0.95
+            0.6 + ((rsi - 70.0) / 30.0 * 0.35)
+        }
+    }
+    
+    /**
+     * Count how many times RSI has been oversold in the dataset
+     */
+    private fun countRSIOversoldOccurrences(data: List<PriceData>): Int {
+        var count = 0
+        for (i in 14 until data.size) {
+            val rsi = calculateRSI(data.take(i + 1))
+            if (rsi < 30.0) count++
+        }
+        return count
+    }
+    
+    /**
+     * Count how many times RSI has been overbought in the dataset
+     */
+    private fun countRSIOverboughtOccurrences(data: List<PriceData>): Int {
+        var count = 0
+        for (i in 14 until data.size) {
+            val rsi = calculateRSI(data.take(i + 1))
+            if (rsi > 70.0) count++
+        }
+        return count
+    }
+    
+    /**
+     * Calculate average return after RSI oversold signals
+     */
+    private fun calculateAverageReturnAfterRSIOversold(data: List<PriceData>): Double {
+        val returns = mutableListOf<Double>()
+        
+        for (i in 14 until data.size - 7) {
+            val rsi = calculateRSI(data.take(i + 1))
+            if (rsi < 30.0) {
+                val entryPrice = data[i].close
+                val exitPrice = data[i + 7].close
+                val returnPct = ((exitPrice - entryPrice) / entryPrice) * 100.0
+                returns.add(returnPct)
+            }
+        }
+        
+        return returns.takeIf { it.isNotEmpty() }?.average() ?: 0.0
+    }
+    
+    /**
+     * Calculate average return after RSI overbought signals
+     */
+    private fun calculateAverageReturnAfterRSIOverbought(data: List<PriceData>): Double {
+        val returns = mutableListOf<Double>()
+        
+        for (i in 14 until data.size - 7) {
+            val rsi = calculateRSI(data.take(i + 1))
+            if (rsi > 70.0) {
+                val entryPrice = data[i].close
+                val exitPrice = data[i + 7].close
+                val returnPct = ((exitPrice - entryPrice) / entryPrice) * 100.0
+                returns.add(returnPct)
+            }
+        }
+        
+        return returns.takeIf { it.isNotEmpty() }?.average() ?: 0.0
+    }
+    
+    /**
+     * Detect bullish RSI divergence
+     * Price makes lower lows while RSI makes higher lows
+     */
+    private fun detectRSIBullishDivergence(data: List<PriceData>): Pattern? {
+        if (data.size < 30) return null
+        
+        val recent = data.takeLast(30)
+        val symbol = data.firstOrNull()?.symbol ?: return null
+        
+        // Find price lows in recent period
+        val priceLows = findLocalMinima(recent.map { it.close })
+        if (priceLows.size < 2) return null
+        
+        // Calculate RSI at those points
+        val rsiAtLows = priceLows.map { idx ->
+            calculateRSI(data.take(data.size - 30 + idx + 1))
+        }
+        
+        if (rsiAtLows.size < 2) return null
+        
+        // Check if price is making lower lows but RSI is making higher lows
+        val priceDecreasing = recent[priceLows.last()].close < recent[priceLows[priceLows.size - 2]].close
+        val rsiIncreasing = rsiAtLows.last() > rsiAtLows[rsiAtLows.size - 2]
+        
+        if (priceDecreasing && rsiIncreasing) {
+            return Pattern(
+                symbol = symbol,
+                patternType = PatternType.RSI_BULLISH_DIVERGENCE,
+                confidence = 0.75,
+                frequency = 1,
+                lastOccurrence = data.last().timestamp,
+                predictedNextOccurrence = null,
+                description = "Bullish RSI Divergence detected - Price making lower lows while RSI makes higher lows. " +
+                        "Strong reversal signal suggesting upward momentum.",
+                averageReturnPercentage = 3.5 // Typical divergence returns
+            )
+        }
+        
+        return null
+    }
+    
+    /**
+     * Detect bearish RSI divergence
+     * Price makes higher highs while RSI makes lower highs
+     */
+    private fun detectRSIBearishDivergence(data: List<PriceData>): Pattern? {
+        if (data.size < 30) return null
+        
+        val recent = data.takeLast(30)
+        val symbol = data.firstOrNull()?.symbol ?: return null
+        
+        // Find price highs in recent period
+        val priceHighs = findLocalMaxima(recent.map { it.close })
+        if (priceHighs.size < 2) return null
+        
+        // Calculate RSI at those points
+        val rsiAtHighs = priceHighs.map { idx ->
+            calculateRSI(data.take(data.size - 30 + idx + 1))
+        }
+        
+        if (rsiAtHighs.size < 2) return null
+        
+        // Check if price is making higher highs but RSI is making lower highs
+        val priceIncreasing = recent[priceHighs.last()].close > recent[priceHighs[priceHighs.size - 2]].close
+        val rsiDecreasing = rsiAtHighs.last() < rsiAtHighs[rsiAtHighs.size - 2]
+        
+        if (priceIncreasing && rsiDecreasing) {
+            return Pattern(
+                symbol = symbol,
+                patternType = PatternType.RSI_BEARISH_DIVERGENCE,
+                confidence = 0.75,
+                frequency = 1,
+                lastOccurrence = data.last().timestamp,
+                predictedNextOccurrence = null,
+                description = "Bearish RSI Divergence detected - Price making higher highs while RSI makes lower highs. " +
+                        "Strong reversal signal suggesting downward momentum.",
+                averageReturnPercentage = -3.5 // Typical divergence returns (negative)
+            )
+        }
+        
+        return null
+    }
+    
+    /**
+     * Find local minima (valley points) in a series
+     */
+    private fun findLocalMinima(values: List<Double>): List<Int> {
+        val minima = mutableListOf<Int>()
+        
+        for (i in 1 until values.size - 1) {
+            if (values[i] < values[i - 1] && values[i] < values[i + 1]) {
+                minima.add(i)
+            }
+        }
+        
+        return minima
+    }
+    
+    /**
+     * Find local maxima (peak points) in a series
+     */
+    private fun findLocalMaxima(values: List<Double>): List<Int> {
+        val maxima = mutableListOf<Int>()
+        
+        for (i in 1 until values.size - 1) {
+            if (values[i] > values[i - 1] && values[i] > values[i + 1]) {
+                maxima.add(i)
+            }
+        }
+        
+        return maxima
+    }
+    
+    /**
+     * Enhance existing patterns with RSI confirmation
+     * Boosts confidence when RSI aligns with pattern prediction
+     */
+    private fun enhancePatternsWithRSI(patterns: MutableList<Pattern>, data: List<PriceData>) {
+        if (data.size < 15) return
+        
+        val currentRSI = calculateRSI(data)
+        
+        for (i in patterns.indices) {
+            val pattern = patterns[i]
+            var confidenceBoost = 0.0
+            
+            // Bullish patterns get boost from oversold RSI
+            when (pattern.patternType) {
+                PatternType.MOVING_AVERAGE_CROSS -> {
+                    if (pattern.averageReturnPercentage > 0 && currentRSI < 40.0) {
+                        confidenceBoost = 0.15 // 15% boost for bullish MA cross with low RSI
+                    } else if (pattern.averageReturnPercentage < 0 && currentRSI > 60.0) {
+                        confidenceBoost = 0.15 // 15% boost for bearish MA cross with high RSI
+                    }
+                }
+                PatternType.SUPPORT_LEVEL -> {
+                    if (currentRSI < 35.0) {
+                        confidenceBoost = 0.10 // Support level more reliable with oversold RSI
+                    }
+                }
+                PatternType.RESISTANCE_LEVEL -> {
+                    if (currentRSI > 65.0) {
+                        confidenceBoost = 0.10 // Resistance level more reliable with overbought RSI
+                    }
+                }
+                PatternType.PRICE_SPIKE -> {
+                    if (currentRSI > 70.0) {
+                        confidenceBoost = 0.12 // Price spike with overbought = likely reversal
+                    }
+                }
+                PatternType.PRICE_DROP -> {
+                    if (currentRSI < 30.0) {
+                        confidenceBoost = 0.12 // Price drop with oversold = likely bounce
+                    }
+                }
+                else -> {
+                    // General boost for patterns aligned with RSI
+                    if (pattern.averageReturnPercentage > 0 && currentRSI < 45.0) {
+                        confidenceBoost = 0.08
+                    } else if (pattern.averageReturnPercentage < 0 && currentRSI > 55.0) {
+                        confidenceBoost = 0.08
+                    }
+                }
+            }
+            
+            if (confidenceBoost > 0) {
+                // Update pattern with boosted confidence
+                patterns[i] = pattern.copy(
+                    confidence = minOf(0.99, pattern.confidence + confidenceBoost),
+                    description = pattern.description + " [RSI Confirmed: ${String.format("%.1f", currentRSI)}]"
+                )
+            }
         }
     }
 }
