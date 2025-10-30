@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,29 +34,57 @@ class ChartFullscreenDialog : DialogFragment() {
     private var priceData: ArrayList<PriceData> = ArrayList()
     private var patterns: ArrayList<Pattern> = ArrayList()
     private var symbol: String = ""
+    private val tooltipDismissHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var tooltipDismissRunnable: Runnable? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("ChartFullscreenDialog", "onCreate - savedInstanceState: ${savedInstanceState != null}")
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
         
-        // Restore state if available
-        arguments?.let {
-            priceData = it.getParcelableArrayList(ARG_PRICE_DATA) ?: ArrayList()
-            patterns = it.getParcelableArrayList(ARG_PATTERNS) ?: ArrayList()
-            symbol = it.getString(ARG_SYMBOL, "")
-        }
+        //  Retain instance across config changes to preserve data
+        retainInstance = true
         
-        savedInstanceState?.let {
-            symbol = it.getString(KEY_SYMBOL, symbol)
+        // First try to restore from savedInstanceState (rotation)
+        if (savedInstanceState != null) {
+            symbol = savedInstanceState.getString(KEY_SYMBOL, "")
+            priceData = savedInstanceState.getParcelableArrayList(KEY_PRICE_DATA) ?: ArrayList()
+            patterns = savedInstanceState.getParcelableArrayList(KEY_PATTERNS) ?: ArrayList()
+            Log.d(TAG, "State restored - symbol: $symbol, priceData: ${priceData.size}, patterns: ${patterns.size}")
+        } else {
+            // If no saved state, load from arguments (first creation)
+            arguments?.let {
+                priceData = it.getParcelableArrayList(ARG_PRICE_DATA) ?: ArrayList()
+                patterns = it.getParcelableArrayList(ARG_PATTERNS) ?: ArrayList()
+                symbol = it.getString(ARG_SYMBOL, "")
+                Log.d(TAG, "Arguments loaded - symbol: $symbol, priceData: ${priceData.size}, patterns: ${patterns.size}")
+            }
         }
     }
     
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(TAG, "onSaveInstanceState - symbol: $symbol, priceData: ${priceData.size}, patterns: ${patterns.size}")
+        outState.putString(KEY_SYMBOL, symbol)
+        outState.putParcelableArrayList(KEY_PRICE_DATA, priceData)
+        outState.putParcelableArrayList(KEY_PATTERNS, patterns)
+    }
+    
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        Log.d(TAG, "onCreateDialog")
         return super.onCreateDialog(savedInstanceState).apply {
-            window?.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-            )
+            window?.apply {
+                setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+                )
+                // Allow screen rotation
+                setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                Log.d(TAG, "Window configured for fullscreen and rotation")
+            }
         }
     }
     
@@ -64,14 +93,17 @@ class ChartFullscreenDialog : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d(TAG, "onCreateView")
         _binding = DialogChartFullscreenBinding.inflate(inflater, container, false)
         return binding.root
     }
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated - symbol: $symbol, priceData: ${priceData.size}, patterns: ${patterns.size}")
         
         binding.closeButton.setOnClickListener {
+            Log.d(TAG, "Close button clicked")
             dismiss()
         }
         
@@ -81,110 +113,170 @@ class ChartFullscreenDialog : DialogFragment() {
         updateChart()
     }
     
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val orientation = if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) "LANDSCAPE" else "PORTRAIT"
+        Log.d(TAG, "onConfigurationChanged - orientation: $orientation")
+        try {
+            // Re-setup chart after rotation
+            binding.fullscreenChart.invalidate()
+            Log.d(TAG, "Chart invalidated after rotation")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling configuration change", e)
+        }
+    }
+    
     private fun setupChart() {
-        binding.fullscreenChart.apply {
-            description.isEnabled = false
-            setTouchEnabled(true)
-            isDragEnabled = true
-            setScaleEnabled(true)
-            setPinchZoom(true)
-            setDrawGridBackground(false)
-            isDoubleTapToZoomEnabled = true
-            
-            // Set marker view for tooltips
-            marker = PriceMarkerView(requireContext(), priceData, patterns)
-            
-            xAxis.apply {
-                position = XAxis.XAxisPosition.BOTTOM
-                setDrawGridLines(true)
-                textColor = Color.WHITE
-                gridColor = Color.argb(50, 255, 255, 255)
-                granularity = 1f
-                setLabelCount(5, false)
-                labelRotationAngle = -45f
-                setAvoidFirstLastClipping(true)
-                isGranularityEnabled = true
-                textSize = 11f
+        Log.d(TAG, "setupChart called")
+        try {
+            binding.fullscreenChart.apply {
+                description.isEnabled = false
+                setTouchEnabled(true)
+                isDragEnabled = true
+                setScaleEnabled(true)
+                setPinchZoom(true)
+                setDrawGridBackground(false)
+                isDoubleTapToZoomEnabled = true
+                
+                // Set marker view for tooltips
+                marker = PriceMarkerView(requireContext(), priceData, patterns)
+                Log.d(TAG, "Marker view set")
+                
+                xAxis.apply {
+                    position = XAxis.XAxisPosition.BOTTOM
+                    setDrawGridLines(true)
+                    textColor = Color.WHITE
+                    gridColor = Color.argb(50, 255, 255, 255)
+                    granularity = 1f
+                    setLabelCount(5, false)
+                    labelRotationAngle = -45f
+                    setAvoidFirstLastClipping(true)
+                    isGranularityEnabled = true
+                    textSize = 11f
+                }
+                
+                axisLeft.apply {
+                    textColor = Color.WHITE
+                    setDrawGridLines(true)
+                    gridColor = Color.argb(50, 255, 255, 255)
+                    setLabelCount(8, false)
+                    textSize = 10f
+                }
+                
+                axisRight.isEnabled = false
+                
+                // Configure legend
+                legend.apply {
+                    textColor = Color.WHITE
+                    verticalAlignment = com.github.mikephil.charting.components.Legend.LegendVerticalAlignment.TOP
+                    horizontalAlignment = com.github.mikephil.charting.components.Legend.LegendHorizontalAlignment.LEFT
+                    orientation = com.github.mikephil.charting.components.Legend.LegendOrientation.VERTICAL
+                    setDrawInside(false)
+                    form = com.github.mikephil.charting.components.Legend.LegendForm.CIRCLE
+                    formSize = 10f
+                    xEntrySpace = 10f
+                    yEntrySpace = 3f
+                    textSize = 9f
+                    maxSizePercent = 0.5f
+                }
+                
+                setExtraOffsets(10f, 10f, 10f, 35f) // Normal padding, legend is vertical
+                
+                // Auto-dismiss tooltip after 4 seconds
+                setOnChartValueSelectedListener(object : com.github.mikephil.charting.listener.OnChartValueSelectedListener {
+                    override fun onValueSelected(e: com.github.mikephil.charting.data.Entry?, h: com.github.mikephil.charting.highlight.Highlight?) {
+                        // Cancel any pending dismiss
+                        tooltipDismissRunnable?.let { tooltipDismissHandler.removeCallbacks(it) }
+                        
+                        // Schedule new dismiss after 4 seconds
+                        tooltipDismissRunnable = Runnable {
+                            binding.fullscreenChart.highlightValue(null)
+                        }
+                        tooltipDismissHandler.postDelayed(tooltipDismissRunnable!!, 4000)
+                    }
+                    
+                    override fun onNothingSelected() {
+                        // Cancel dismiss when manually deselected
+                        tooltipDismissRunnable?.let { tooltipDismissHandler.removeCallbacks(it) }
+                    }
+                })
             }
             
-            axisLeft.apply {
-                textColor = Color.WHITE
-                setDrawGridLines(true)
-                gridColor = Color.argb(50, 255, 255, 255)
-                setLabelCount(8, false)
-                textSize = 10f
-            }
-            
-            axisRight.isEnabled = false
-            legend.apply {
-                textColor = Color.WHITE
-                textSize = 12f
-            }
-            setExtraOffsets(10f, 10f, 10f, 35f)
+            Log.d(TAG, "Chart setup complete")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in setupChart", e)
         }
     }
     
     private fun updateChart() {
+        Log.d(TAG, "updateChart called - priceData: ${priceData.size}, patterns: ${patterns.size}")
         if (priceData.isEmpty()) {
+            Log.w(TAG, "No price data available for chart")
+            binding.fullscreenChart.clear()
+            binding.fullscreenChart.setNoDataText("No chart data available")
+            binding.fullscreenChart.invalidate()
             return
         }
         
-        val entries = priceData.mapIndexed { index, data ->
-            Entry(index.toFloat(), data.close.toFloat())
-        }
-        
-        // Get color based on crypto symbol
-        val chartColor = CryptoColorMapper.getColorForSymbol(symbol)
-        val highlightColor = Color.parseColor("#03DAC5")
-        
-        val dataSet = LineDataSet(entries, "$symbol Price").apply {
-            color = chartColor
-            setDrawCircles(true)
-            circleRadius = 2f
-            setCircleColor(chartColor)
-            lineWidth = 2f
-            setDrawValues(false)
-            mode = LineDataSet.Mode.CUBIC_BEZIER
-            setDrawFilled(true)
-            fillColor = chartColor
-            fillAlpha = 50
-            highLightColor = highlightColor
-            highlightLineWidth = 1.5f
-            enableDashedHighlightLine(10f, 5f, 0f)
-        }
-        
-        // Create pattern markers if patterns are available
-        val dataSets = mutableListOf<ILineDataSet>(dataSet)
-        
-        if (patterns.isNotEmpty()) {
-            val markerData = createPatternMarkerEntries(priceData, patterns)
+        try {
+            val entries = priceData.mapIndexed { index, data ->
+                Entry(index.toFloat(), data.close.toFloat())
+            }
+            Log.d(TAG, "Created ${entries.size} price entries")
             
-            // Group markers by color and create descriptive labels
-            val markersByColor = markerData.groupBy { it.second }
-            val colorLabels = mapOf(
-                Color.RED to "Bearish Signals",
-                Color.GREEN to "Bullish Signals",
-                Color.rgb(255, 193, 7) to "Support Levels",
-                Color.BLUE to "Divergence",
-                Color.rgb(255, 152, 0) to "Volume Spikes",
-                Color.rgb(156, 39, 176) to "Volatility"
-            )
+            // Get color based on crypto symbol
+            val chartColor = CryptoColorMapper.getColorForSymbol(symbol)
+            val highlightColor = Color.parseColor("#03DAC5")
             
-            markersByColor.forEach { (color, markers) ->
+            val dataSet = LineDataSet(entries, "$symbol Price").apply {
+                color = chartColor
+                setDrawCircles(false) // Disable circles on price line
+                lineWidth = 2f
+                setDrawValues(false)
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+                setDrawFilled(true)
+                fillColor = chartColor
+                fillAlpha = 50
+                highLightColor = highlightColor
+                highlightLineWidth = 1.5f
+                enableDashedHighlightLine(10f, 5f, 0f)
+            }
+            
+            // Create pattern markers if patterns are available
+            val dataSets = mutableListOf<ILineDataSet>(dataSet)
+            
+            if (patterns.isNotEmpty()) {
+                Log.d(TAG, "Creating pattern markers for ${patterns.size} patterns")
+                val markerData = createPatternMarkerEntries(priceData, patterns)
+                Log.d(TAG, "Created ${markerData.size} marker entries")
+                
+                // Group markers by color and create descriptive labels
+                val markersByColor = markerData.groupBy { it.second }
+                val colorLabels = mapOf(
+                    Color.RED to "Bearish Signals",
+                    Color.GREEN to "Bullish Signals",
+                    Color.rgb(255, 193, 7) to "Support Levels",
+                    Color.BLUE to "Divergence",
+                    Color.rgb(255, 152, 0) to "Volume Spikes",
+                    Color.rgb(156, 39, 176) to "Volatility"
+                )
+                
+                markersByColor.forEach { (color, markers) ->
                 val markerEntries = markers.map { it.first }
                 val label = colorLabels[color] ?: "Pattern"
                 
                 val markerDataSet = LineDataSet(markerEntries, label).apply {
+                    this.color = color // For legend color
                     setDrawCircles(true)
                     setCircleColor(color)
-                    circleRadius = 8f
-                    circleHoleRadius = 4f
-                    circleHoleColor = Color.WHITE
+                    circleRadius = 6f // Slightly larger for fullscreen
+                    circleHoleRadius = 0f // No hole, solid circles
                     setDrawValues(false)
-                    lineWidth = 0f
+                    lineWidth = 0f // No lines between markers
                     setDrawHighlightIndicators(false)
                 }
                 dataSets.add(markerDataSet)
+                Log.d(TAG, "Added marker dataset: ${colorLabels[color]} with ${markers.size} markers")
             }
         }
         
@@ -203,8 +295,13 @@ class ChartFullscreenDialog : DialogFragment() {
             }
         }
         
+        Log.d(TAG, "Chart data set with ${dataSets.size} datasets")
         binding.fullscreenChart.invalidate()
         binding.fullscreenChart.animateX(800)
+        Log.d(TAG, "Chart updated and invalidated")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating chart", e)
+        }
     }
     
     private fun createPatternMarkerEntries(
@@ -216,9 +313,10 @@ class ChartFullscreenDialog : DialogFragment() {
         val markerEntries = mutableListOf<Pair<Entry, Int>>()
         
         patterns.forEach { pattern ->
-            val closestIndex = priceData.indexOfFirst { 
-                it.timestamp >= pattern.lastOccurrence 
-            }
+            // Find the closest price data point to this pattern's lastOccurrence
+            val closestIndex = priceData.indices.minByOrNull { index ->
+                Math.abs(priceData[index].timestamp - pattern.lastOccurrence)
+            } ?: -1
             
             if (closestIndex >= 0 && closestIndex < priceData.size) {
                 val pricePoint = priceData[closestIndex]
@@ -267,28 +365,47 @@ class ChartFullscreenDialog : DialogFragment() {
         }
     }
     
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        // Redraw chart on orientation change
-        setupChart()
-        updateChart()
-    }
-    
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(KEY_SYMBOL, symbol)
-    }
-    
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.d(TAG, "onDestroyView")
+        try {
+            // Clean up tooltip auto-dismiss
+            tooltipDismissRunnable?.let { tooltipDismissHandler.removeCallbacks(it) }
+            // Clear chart data to free memory
+            binding.fullscreenChart.clear()
+            binding.fullscreenChart.data = null
+            Log.d(TAG, "Chart cleared")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onDestroyView", e)
+        }
         _binding = null
     }
     
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy - isChangingConfigurations: ${activity?.isChangingConfigurations}")
+        // Only clear data if NOT rotating (configuration change)
+        if (activity?.isChangingConfigurations == false) {
+            try {
+                priceData.clear()
+                patterns.clear()
+                Log.d(TAG, "Data collections cleared (final destroy)")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in onDestroy", e)
+            }
+        } else {
+            Log.d(TAG, "Skipping data clear due to configuration change")
+        }
+    }
+    
     companion object {
-        private const val KEY_SYMBOL = "symbol"
+        private const val TAG = "ChartFullscreenDialog"
         private const val ARG_PRICE_DATA = "price_data"
         private const val ARG_PATTERNS = "patterns"
         private const val ARG_SYMBOL = "symbol"
+        private const val KEY_SYMBOL = "key_symbol"
+        private const val KEY_PRICE_DATA = "saved_price_data"
+        private const val KEY_PATTERNS = "saved_patterns"
         
         fun newInstance(priceData: List<PriceData>, symbol: String, patterns: List<Pattern> = emptyList()): ChartFullscreenDialog {
             return ChartFullscreenDialog().apply {

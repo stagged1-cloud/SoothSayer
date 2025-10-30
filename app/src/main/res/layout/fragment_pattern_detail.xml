@@ -364,7 +364,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Time Until Next"
+                            android:text="Estimated Next"
                             android:textColor="@color/text_secondary_dark" />
 
                         <TextView

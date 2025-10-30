@@ -2,6 +2,7 @@ package com.soothsayer.predictor.ui.fragments
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,9 +55,9 @@ class AnalysisFragment : Fragment() {
     private var currentPatterns: List<com.soothsayer.predictor.data.models.Pattern> = emptyList()
     private var currentSymbol: String = "BTCUSDT"
     private val filterStates = mutableMapOf<String, Boolean>()
-    private var priceMarkerView: PriceMarkerView? = null
     
     companion object {
+        private const val TAG = "AnalysisFragment"
         private const val KEY_CURRENT_SYMBOL = "current_symbol"
         private const val KEY_PRICE_DATA = "price_data"
         private const val KEY_FILTER_STATES = "filter_states"
@@ -148,6 +149,30 @@ class AnalysisFragment : Fragment() {
         binding.cryptoAutocomplete.setAdapter(adapter)
         binding.cryptoAutocomplete.threshold = 1  // Show suggestions after 1 character
         
+        // Always show all options when dropdown is opened - with safety checks
+        binding.cryptoAutocomplete.setOnClickListener {
+            // Only show dropdown if activity is valid and view is attached to window
+            if (activity != null && !requireActivity().isFinishing && !requireActivity().isDestroyed 
+                && binding.cryptoAutocomplete.windowToken != null) {
+                binding.cryptoAutocomplete.showDropDown()
+            }
+        }
+        
+        binding.cryptoAutocomplete.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                // Only show dropdown if activity is valid and view is attached to window
+                if (activity != null && !requireActivity().isFinishing && !requireActivity().isDestroyed 
+                    && binding.cryptoAutocomplete.windowToken != null) {
+                    // Post to ensure window is fully ready
+                    binding.cryptoAutocomplete.post {
+                        if (binding.cryptoAutocomplete.windowToken != null) {
+                            binding.cryptoAutocomplete.showDropDown()
+                        }
+                    }
+                }
+            }
+        }
+        
         // Set current selection (works for both initial load and restoration)
         val currentCrypto = CryptoList.getDisplayName(currentSymbol) ?: cryptoNames[0]
         binding.cryptoAutocomplete.setText(currentCrypto, false)
@@ -159,11 +184,13 @@ class AnalysisFragment : Fragment() {
             
             if (apiSymbol != null && apiSymbol != currentSymbol) {
                 currentSymbol = apiSymbol
-                // Clear old chart data and show loading
+                // Clear old chart data and cached data
                 binding.priceChart.clear()
+                currentPriceData.clear()
+                currentPatterns = emptyList()
                 binding.dataStatus.text = "Loading..."
-                // Auto-analyze when crypto is selected
-                viewModel.analyzePatterns(currentSymbol)
+                // Force refresh data when switching cryptos
+                viewModel.analyzePatterns(currentSymbol, forceRefresh = true)
             }
         }
     }
@@ -253,34 +280,40 @@ class AnalysisFragment : Fragment() {
             val apiSymbol = CryptoList.getApiSymbol(selectedCrypto)
             if (apiSymbol != null) {
                 currentSymbol = apiSymbol
-                viewModel.analyzePatterns(currentSymbol)
+                // Clear cached data to ensure fresh analysis
+                currentPriceData.clear()
+                currentPatterns = emptyList()
+                viewModel.analyzePatterns(currentSymbol, forceRefresh = true)
             }
         }
     }
     
     private fun setupChart() {
+        Log.d(TAG, "setupChart called")
         binding.priceChart.apply {
             description.isEnabled = false
-            setTouchEnabled(true)
-            isDragEnabled = true
-            setScaleEnabled(true)
-            setPinchZoom(true)
+            setTouchEnabled(true) // Need touch enabled to detect clicks
+            isDragEnabled = false
+            setScaleEnabled(false)
+            setPinchZoom(false)
             setDrawGridBackground(false)
+            isHighlightPerTapEnabled = false // Disable tap highlighting
+            setNoDataText("Tap 'Analyze Patterns' to load chart")
+            setNoDataTextColor(Color.GRAY)
             
-            // Prevent parent ScrollView from intercepting touch events
-            setOnTouchListener { view, event ->
-                when (event.action) {
-                    android.view.MotionEvent.ACTION_DOWN -> {
-                        // Disable parent scrolling when touching the chart
-                        view.parent?.requestDisallowInterceptTouchEvent(true)
-                    }
-                    android.view.MotionEvent.ACTION_UP,
-                    android.view.MotionEvent.ACTION_CANCEL -> {
-                        // Re-enable parent scrolling when done
-                        view.parent?.requestDisallowInterceptTouchEvent(false)
+            // Intercept all touches and convert to fullscreen open
+            setOnTouchListener { _, event ->
+                if (event.action == android.view.MotionEvent.ACTION_UP) {
+                    // Open fullscreen on any tap
+                    if (currentPriceData.isNotEmpty()) {
+                        Log.d(TAG, "Opening fullscreen chart - priceData: ${currentPriceData.size}, patterns: ${currentPatterns.size}")
+                        ChartFullscreenDialog.newInstance(currentPriceData, currentSymbol, currentPatterns)
+                            .show(childFragmentManager, "ChartFullscreenDialog")
+                    } else {
+                        Log.d(TAG, "Cannot open fullscreen - no price data available")
                     }
                 }
-                false // Let the chart handle the event
+                true // Consume the event to prevent default chart behavior
             }
             
             xAxis.apply {
@@ -308,16 +341,23 @@ class AnalysisFragment : Fragment() {
             }
             
             axisRight.isEnabled = false
-            legend.textColor = Color.WHITE
-            setExtraOffsets(10f, 10f, 10f, 25f) // Extra padding for rotated labels
             
-            // Click to open fullscreen chart
-            setOnClickListener {
-                if (currentPriceData.isNotEmpty()) {
-                    ChartFullscreenDialog.newInstance(currentPriceData, currentSymbol, currentPatterns)
-                        .show(childFragmentManager, "ChartFullscreenDialog")
-                }
+            // Configure legend
+            legend.apply {
+                textColor = Color.WHITE
+                verticalAlignment = com.github.mikephil.charting.components.Legend.LegendVerticalAlignment.TOP
+                horizontalAlignment = com.github.mikephil.charting.components.Legend.LegendHorizontalAlignment.LEFT
+                orientation = com.github.mikephil.charting.components.Legend.LegendOrientation.VERTICAL
+                setDrawInside(false)
+                form = com.github.mikephil.charting.components.Legend.LegendForm.CIRCLE
+                formSize = 8f
+                xEntrySpace = 8f
+                yEntrySpace = 2f
+                textSize = 8f
+                maxSizePercent = 0.5f
             }
+            
+            setExtraOffsets(10f, 5f, 10f, 25f) // Reduced top padding, legend is vertical now
         }
     }
     
@@ -335,15 +375,17 @@ class AnalysisFragment : Fragment() {
         
         patterns.forEach { pattern ->
             // Find the closest price data point to this pattern's lastOccurrence
-            val closestIndex = priceData.indexOfFirst { 
-                it.timestamp >= pattern.lastOccurrence 
-            }
+            val closestIndex = priceData.indices.minByOrNull { index ->
+                Math.abs(priceData[index].timestamp - pattern.lastOccurrence)
+            } ?: -1
             
             if (closestIndex >= 0 && closestIndex < priceData.size) {
                 val pricePoint = priceData[closestIndex]
                 val entry = Entry(closestIndex.toFloat(), pricePoint.close.toFloat())
                 val color = getPatternMarkerColor(pattern.patternType)
                 markerEntries.add(Pair(entry, color))
+                
+                android.util.Log.d("AnalysisFragment", "Pattern ${pattern.patternType} mapped to index $closestIndex (timestamp: ${pricePoint.timestamp})")
             }
         }
         
@@ -394,61 +436,66 @@ class AnalysisFragment : Fragment() {
     }
     
     private fun updateChart(priceData: List<com.soothsayer.predictor.data.models.PriceData>) {
+        android.util.Log.d("AnalysisFragment", "updateChart called - symbol: $currentSymbol, priceData: ${priceData.size}, patterns: ${currentPatterns.size}")
+        
         if (priceData.isEmpty()) {
+            android.util.Log.w("AnalysisFragment", "updateChart called with empty price data for $currentSymbol")
             binding.priceChart.clear()
+            binding.priceChart.invalidate()
             return
         }
         
-        // Store current price data for fullscreen view and state restoration
-        currentPriceData = ArrayList(priceData)
-        
-        // Reuse or create marker view for tooltips
-        if (priceMarkerView == null) {
-            priceMarkerView = PriceMarkerView(requireContext(), priceData, currentPatterns)
-            binding.priceChart.marker = priceMarkerView
+        // TEMP: Add dummy patterns for Ocean testing
+        val patternsToUse = if (currentSymbol == "OCEANUSDT" && currentPatterns.isEmpty()) {
+            // Let the pattern analyzer run on the dummy data instead of hardcoded patterns
+            currentPatterns
         } else {
-            // Update the marker view with new data
-            priceMarkerView?.updateData(priceData, currentPatterns)
+            currentPatterns
         }
         
-        // Use index for X-axis (0, 1, 2...) instead of timestamp
-        val entries = priceData.mapIndexed { index, data -> 
-            Entry(index.toFloat(), data.close.toFloat()) 
-        }
-        
-        // Get color based on current crypto symbol
-        val chartColor = CryptoColorMapper.getColorForSymbol(currentSymbol)
-        val fillColor = CryptoColorMapper.getLightColorForSymbol(currentSymbol)
-        
-        val dataSet = LineDataSet(entries, "$currentSymbol Price").apply {
-            color = chartColor
-            setDrawCircles(false)
-            lineWidth = 2f
-            setDrawValues(false)
-            mode = LineDataSet.Mode.CUBIC_BEZIER
-            setDrawFilled(true)
-            this.fillColor = chartColor
-            fillAlpha = 50
-        }
-        
-        // Create pattern markers if patterns are available
-        val dataSets = mutableListOf<ILineDataSet>(dataSet)
-        
-        if (currentPatterns.isNotEmpty()) {
-            val markerData = createPatternMarkerEntries(priceData, currentPatterns)
+        try {
+            // Store current price data for fullscreen view and state restoration
+            currentPriceData = ArrayList(priceData)
             
-            android.util.Log.d("AnalysisFragment", "Patterns detected: ${currentPatterns.size}")
-            android.util.Log.d("AnalysisFragment", "Marker entries created: ${markerData.size}")
+            // Use index for X-axis (0, 1, 2...) instead of timestamp
+            val entries = priceData.mapIndexed { index, data -> 
+                Entry(index.toFloat(), data.close.toFloat()) 
+            }
+            android.util.Log.d("AnalysisFragment", "Created ${entries.size} price entries")
             
-            // Group markers by color and create descriptive labels
-            val markersByColor = markerData.groupBy { it.second }
-            val colorLabels = mapOf(
-                Color.RED to "Bearish Signals",
-                Color.GREEN to "Bullish Signals",
-                Color.rgb(255, 193, 7) to "Support Levels",
-                Color.BLUE to "Divergence",
-                Color.rgb(255, 152, 0) to "Volume Spikes",
-                Color.rgb(156, 39, 176) to "Volatility"
+            // Get color based on current crypto symbol
+            val chartColor = CryptoColorMapper.getColorForSymbol(currentSymbol)
+            val fillColor = CryptoColorMapper.getLightColorForSymbol(currentSymbol)
+            
+            val dataSet = LineDataSet(entries, "$currentSymbol Price").apply {
+                color = chartColor
+                setDrawCircles(false)
+                lineWidth = 2f
+                setDrawValues(false)
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+                setDrawFilled(true)
+                this.fillColor = chartColor
+                fillAlpha = 50
+            }
+            
+            // Create pattern markers if patterns are available
+            val dataSets = mutableListOf<ILineDataSet>(dataSet)
+            
+            if (patternsToUse.isNotEmpty()) {
+                val markerData = createPatternMarkerEntries(priceData, patternsToUse)
+                
+                android.util.Log.d("AnalysisFragment", "Patterns detected: ${patternsToUse.size}")
+                android.util.Log.d("AnalysisFragment", "Marker entries created: ${markerData.size}")
+                
+                // Group markers by color and create descriptive labels
+                val markersByColor = markerData.groupBy { it.second }
+                val colorLabels = mapOf(
+                    Color.RED to "Bearish Signals",
+                    Color.GREEN to "Bullish Signals",
+                    Color.rgb(255, 193, 7) to "Support Levels",
+                    Color.BLUE to "Divergence",
+                    Color.rgb(255, 152, 0) to "Volume Spikes",
+                    Color.rgb(156, 39, 176) to "Volatility"
             )
             
             markersByColor.forEach { (color, markers) ->
@@ -458,23 +505,25 @@ class AnalysisFragment : Fragment() {
                 android.util.Log.d("AnalysisFragment", "Creating ${label} dataset with ${markerEntries.size} markers")
                 
                 val markerDataSet = LineDataSet(markerEntries, label).apply {
-                    this.color = Color.TRANSPARENT // Make line invisible
+                    this.color = color // For legend color
                     setDrawCircles(true)
                     setCircleColor(color)
-                    circleRadius = 8f
-                    circleHoleRadius = 4f
-                    circleHoleColor = Color.WHITE
+                    circleRadius = 5f // Match legend size
+                    circleHoleRadius = 0f // No hole, solid circles
                     setDrawValues(false)
-                    lineWidth = 0.1f // Small non-zero width to ensure circles render
+                    lineWidth = 0f // No lines between markers
                     setDrawHighlightIndicators(false)
                     isHighlightEnabled = true
                 }
                 dataSets.add(markerDataSet)
+                android.util.Log.d("AnalysisFragment", "Added marker dataset: ${colorLabels[color]} with ${markers.size} markers")
             }
+        } else {
+            android.util.Log.d("AnalysisFragment", "No patterns to display on chart")
         }
         
         binding.priceChart.data = LineData(dataSets)
-        binding.priceChart.legend.isEnabled = currentPatterns.isNotEmpty()
+        binding.priceChart.legend.isEnabled = dataSets.isNotEmpty()
         
         // Update X-axis formatter to show dates correctly based on index
         binding.priceChart.xAxis.valueFormatter = object : ValueFormatter() {
@@ -489,28 +538,43 @@ class AnalysisFragment : Fragment() {
             }
         }
         
+        android.util.Log.d("AnalysisFragment", "Chart data set with ${dataSets.size} datasets")
+        // Simplified update - just set data and invalidate
         binding.priceChart.invalidate()
+        android.util.Log.d("AnalysisFragment", "Chart updated successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("AnalysisFragment", "Error updating chart", e)
+        }
     }
     
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.patterns.collect { resource ->
                 when (resource) {
-                    is Resource.Loading -> showLoading()
+                    is Resource.Loading -> {
+                        Log.d(TAG, "Patterns loading...")
+                        showLoading()
+                    }
                     is Resource.Success -> {
                         hideLoading()
                         resource.data?.let { patterns ->
+                            Log.d(TAG, "Patterns loaded successfully: ${patterns.size} patterns")
                             currentPatterns = patterns
                             patternAdapter.submitList(patterns)
                             // Update chart with pattern markers if price data is available
                             if (currentPriceData.isNotEmpty()) {
+                                Log.d(TAG, "Updating chart with patterns")
                                 updateChart(currentPriceData)
+                            } else {
+                                Log.w(TAG, "Price data not available yet for pattern markers")
                             }
                         }
                     }
                     is Resource.Error -> {
                         hideLoading()
-                        showError(resource.message ?: "Unknown error")
+                        val errorMsg = resource.message ?: "Unknown error"
+                        Log.e(TAG, "Patterns error: $errorMsg")
+                        showError(errorMsg)
                     }
                 }
             }
@@ -519,25 +583,38 @@ class AnalysisFragment : Fragment() {
         // Observe price data for chart
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.priceData.collect { resource ->
-                android.util.Log.d("AnalysisFragment", "Price data resource: $resource")
+                android.util.Log.d("AnalysisFragment", "Price data resource for $currentSymbol: ${resource.javaClass.simpleName}")
                 when (resource) {
                     is Resource.Success -> {
-                        resource.data?.let { 
-                            if (it.isNotEmpty()) {
-                                updateChart(it)
-                                updateDataStatus(it)
+                        resource.data?.let { data ->
+                            android.util.Log.d("AnalysisFragment", "Price data received: ${data.size} points for $currentSymbol")
+                            if (data.isNotEmpty()) {
+                                updateChart(data)
+                                updateDataStatus(data)
                             } else {
-                                binding.dataStatus.text = "No data available"
+                                android.util.Log.w("AnalysisFragment", "Empty price data for $currentSymbol")
+                                binding.dataStatus.text = "No data available for $currentSymbol"
                                 binding.priceChart.clear()
+                                binding.priceChart.invalidate()
                             }
+                        } ?: run {
+                            android.util.Log.w("AnalysisFragment", "Null price data for $currentSymbol")
+                            binding.dataStatus.text = "No data available"
+                            binding.priceChart.clear()
+                            binding.priceChart.invalidate()
                         }
                     }
                     is Resource.Loading -> {
+                        android.util.Log.d("AnalysisFragment", "Loading price data for $currentSymbol")
                         binding.dataStatus.text = "Loading..."
+                        binding.priceChart.clear()
+                        binding.priceChart.invalidate()
                     }
                     is Resource.Error -> {
+                        android.util.Log.e("AnalysisFragment", "Price data error for $currentSymbol: ${resource.message}")
                         binding.dataStatus.text = "Error: ${resource.message}"
-                        android.util.Log.e("AnalysisFragment", "Price data error: ${resource.message}")
+                        binding.priceChart.clear()
+                        binding.priceChart.invalidate()
                     }
                 }
             }
@@ -581,7 +658,10 @@ class AnalysisFragment : Fragment() {
     
     override fun onDestroyView() {
         super.onDestroyView()
-        priceMarkerView = null
+        // Clear chart data to free memory
+        binding.priceChart.clear()
+        binding.priceChart.data = null
+        currentPriceData.clear()
         _binding = null
     }
 }

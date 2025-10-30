@@ -79,10 +79,10 @@ class AnalysisViewModel @Inject constructor(
      * Analyze patterns for selected symbol
      * Uses ALL enabled pattern detection algorithms
      */
-    fun analyzePatterns(symbol: String) {
+    fun analyzePatterns(symbol: String, forceRefresh: Boolean = false) {
         viewModelScope.launch {
             try {
-                android.util.Log.d("AnalysisViewModel", "Starting analysis for $symbol")
+                android.util.Log.d("AnalysisViewModel", "Starting analysis for $symbol, forceRefresh=$forceRefresh")
                 _patterns.value = Resource.Loading()
                 _priceData.value = Resource.Loading()
                 
@@ -90,18 +90,17 @@ class AnalysisViewModel @Inject constructor(
                 val result = detectPatternsUseCase(
                     symbol = symbol,
                     filters = currentFilters,
-                    days = 365 // Analyze 1 year of data
+                    days = 365, // Analyze 1 year of data
+                    forceRefresh = forceRefresh
                 )
                 
                 android.util.Log.d("AnalysisViewModel", "Analysis result: $result")
                 _patterns.value = result
                 
-                // Also fetch and expose price data for chart
-                if (result is Resource.Success) {
-                    val priceDataResult = detectPatternsUseCase.getPriceData(symbol, 90) // Last 90 days for chart
-                    android.util.Log.d("AnalysisViewModel", "Price data result: $priceDataResult")
-                    _priceData.value = priceDataResult
-                }
+                // Always fetch and expose price data for chart (even if pattern analysis fails)
+                val priceDataResult = detectPatternsUseCase.getPriceData(symbol, 90, forceRefresh) // Last 90 days for chart
+                android.util.Log.d("AnalysisViewModel", "Price data result: $priceDataResult")
+                _priceData.value = priceDataResult
             } catch (e: Exception) {
                 android.util.Log.e("AnalysisViewModel", "Error in analyzePatterns", e)
                 _patterns.value = Resource.Error(e.message ?: "Unknown error")

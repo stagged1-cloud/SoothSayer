@@ -60,6 +60,7 @@ class PriceMarkerView(
     }
 
     override fun getOffset(): MPPointF {
-        return MPPointF(-(width / 2f), -height.toFloat())
+        // Adjust tooltip position to prevent right-side cutoff
+        return MPPointF(-(width.toFloat()), -height.toFloat())
     }
 }

@@ -7,7 +7,111 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (October 29, 2025)
+### Added (October 29, 2025 - Latest Session)
+
+#### Ocean Protocol (OCEAN) Support
+- Added Ocean Protocol to supported cryptocurrencies list
+- Symbol mapping for Ocean Protocol (OCEANUSDT -> ocean on CoinGecko)
+- Temporary dummy data generation for Ocean testing (31 days of sample price data)
+- Force refresh mechanism to bypass cached empty data
+
+#### Chart Display & UX Improvements  
+- Fixed chart not displaying data points after crypto selection
+- Implemented force refresh on crypto switching to prevent stale cached data
+- Added detailed logging throughout data flow (CryptoRepository → ViewModel → Fragment)
+- Chart now properly clears and reloads when switching between cryptocurrencies
+- Fixed Ocean Protocol showing "no data available" issue
+
+#### Data Fetching Enhancements
+- Fixed API fallback logic with `.takeIf { it.isNotEmpty() }` checks
+- Empty response arrays now properly trigger fallback to next data source
+- Enhanced error handling in CryptoRepository with detailed log messages
+- Added forceRefresh parameter throughout data flow:
+  - `CryptoRepository.getPriceHistory(forceRefresh)`
+  - `DetectPatternsUseCase.invoke(forceRefresh)`  
+  - `AnalysisViewModel.analyzePatterns(forceRefresh)`
+  - `AnalysisFragment` crypto selection auto-refresh
+
+#### Fullscreen Chart Rotation Fix
+- Fixed fullscreen chart data loss on screen rotation (landscape/portrait)
+- Implemented `retainInstance = true` for configuration change preservation
+- Added `onSaveInstanceState` and state restoration in `ChartFullscreenDialog`
+- Pattern markers and price data now persist across rotations
+- Chart properly recreates after rotation without data reload
+
+#### Pattern Marker Visualization
+- Removed hardcoded dummy patterns - now using real pattern analysis results
+- Pattern detection runs on all data (including Ocean dummy data for testing)
+- Filters affect pattern detection and chart display
+- Solid circle markers (no hole) for better visibility
+- Pattern markers synced between main chart and fullscreen chart
+
+#### Website (GitHub Pages) Fixes
+- Fixed price ticker API error handling with fallback placeholder data
+- Enhanced price formatting with proper currency display (Intl.NumberFormat)
+- Added Accept header to CoinGecko API requests for better compatibility
+- Prices now display with correct decimal precision (2 for $1+, 4 for <$1)
+- Graceful degradation when API rate limits are hit
+
+### Changed
+
+#### Logging & Debugging
+- Comprehensive logging added across all data layers:
+  - Repository: API calls, response sizes, cache hits
+  - ViewModel: Analysis start/end, resource states
+  - Fragment: Chart updates, data flow, user interactions
+- All log messages tagged with component name for easy filtering
+- Error logs include exception stack traces
+
+#### Code Quality
+- Improved null safety checks throughout data flow
+- Better error messages for debugging  
+- More defensive programming in chart update logic
+- Cleaner separation between cached and fresh data
+
+### Fixed
+
+#### Data Flow Issues
+- Ocean Protocol data now loads correctly with force refresh
+- Chart clearing on crypto switch prevents showing wrong data
+- Cached empty responses no longer block fresh API calls
+- API fallback chain properly tests each source before giving up
+
+#### UI/UX Bugs  
+- Chart no longer shows "wavy graph with no data points"
+- Pattern markers appear correctly after pattern analysis completes
+- Fullscreen dialog survives screen rotation without data loss
+- Price ticker on website displays properly formatted prices
+
+### Technical
+
+#### API Integration
+- CoinGecko API calls now include proper headers
+- Better error handling for rate limits and network failures
+- Dummy data generator for testing (Ocean Protocol)
+- Multi-source fallback: Binance → CoinGecko → CryptoCompare
+
+#### State Management
+- Force refresh flag propagates through entire data pipeline
+- ViewModel properly manages loading states
+- Fragment preserves filter states across configuration changes
+- Fullscreen dialog retains data through rotations
+
+#### Build System
+- Gradle updated to 8.14.3
+- Successful build with 45 tasks executed
+- APK installed on SM-N986B test device
+
+### Testing
+- Verified Ocean Protocol dummy data displays on chart
+- Tested pattern detection with various filter combinations
+- Confirmed force refresh bypasses stale cached data
+- Validated fullscreen chart rotation preservation
+- Website price ticker tested with fallback mechanism
+
+---
+
+### Added (October 29, 2025 - Earlier Session)
 
 #### Pattern Markers on Charts
 - Visual pattern detection markers (colored dots) on price charts

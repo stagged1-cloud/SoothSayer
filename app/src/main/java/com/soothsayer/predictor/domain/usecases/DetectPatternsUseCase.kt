@@ -24,17 +24,19 @@ class DetectPatternsUseCase @Inject constructor(
      * @param symbol Crypto symbol (e.g., "BTCUSDT")
      * @param filters Pattern detection filters
      * @param days Number of days of historical data to analyze
+     * @param forceRefresh Whether to bypass cache
      * @return Resource containing detected patterns
      */
     suspend operator fun invoke(
         symbol: String,
         filters: PatternFilter,
-        days: Int = 365
+        days: Int = 365,
+        forceRefresh: Boolean = false
     ): Resource<List<Pattern>> = withContext(Dispatchers.Default) {
         
         try {
             // Step 1: Fetch price data
-            val priceDataResource = repository.getPriceHistory(symbol, days)
+            val priceDataResource = repository.getPriceHistory(symbol, days, forceRefresh)
             
             if (priceDataResource is Resource.Error) {
                 return@withContext Resource.Error(priceDataResource.message ?: "Failed to fetch data")
@@ -77,8 +79,9 @@ class DetectPatternsUseCase @Inject constructor(
      */
     suspend fun getPriceData(
         symbol: String,
-        days: Int = 90
+        days: Int = 90,
+        forceRefresh: Boolean = false
     ): Resource<List<com.soothsayer.predictor.data.models.PriceData>> {
-        return repository.getPriceHistory(symbol, days)
+        return repository.getPriceHistory(symbol, days, forceRefresh)
     }
 }
